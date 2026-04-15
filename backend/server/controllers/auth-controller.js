@@ -1,0 +1,115 @@
+import bcrypt from 'bcrypt'
+import express from 'express'
+import { UserModel } from '../models/user-model.js'
+import { SALT_ROUNDS, SECRET_JWT_KEY } from '../../config.js'
+import jwt from 'jsonwebtoken'
+import cookieParser from 'cookie-parser'
+
+const app = express()
+app.disable('x-powered-by')
+app.use(express.json()) // Middleware
+app.use(cookieParser()) // Middleware
+
+// Middleware para buscar el toquen en todas las rutas
+app.use((req, res, next) => {
+  // Busca una cookie llamada access_token
+  const token = req.cookies.access_token
+  // Inicia sesion y por defecto asigna un null
+  req.session = { user: null }
+
+  try {
+    // Si el token es valido lo decodifica y mete los datos del usuario en request.session user
+    const data = jwt.verify(token, SECRET_JWT_KEY)
+    req.session.user = data
+  } catch (error) {
+    res.send('Error de sesión', error.message)
+  }
+
+  next() // -> Seguir a la siguiente ruta o middleware
+})
+
+// Método para el registro del usuario
+export const register = async (req, res) => {
+  const { name, email, password } = req.body
+
+  Validation.name(name)
+  Validation.email(email)
+  Validation.password(password)
+
+  try {
+    // FIltro para saber si el usuario está registrado o no
+    const user = UserModel.findByEmail(email)
+    if (user) {
+      res.status(400).json({ message: 'El usuario ya está registrado '})
+    }
+
+    // Hasheo de la contraseña para mayor seguridad
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
+
+    UserModel.createUser(name, email, passwordHash)
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email
+      },
+      SECRET_JWT_KEY,
+      {
+        expiresIn: '1h'
+      }
+    )
+
+    res.status(201).json({ message: 'Usuario registrado correctamente', token})
+  } catch (error) {
+    res.send('Error al registrar el usuario', error.message)
+  }
+}
+
+// Método para el inicio de sesión del usuario
+export const login = async (req, res) => {
+  const { email, password } = req.body
+
+  Validation.email(email)
+  Validation.password(password)
+
+  try {
+    const user = UserModel.findByEmail(email)
+
+    if (!user) {
+      res.status(400).json({ message: 'El usuario no está registrado'})
+    }
+
+    const match = await bcrypt (password, user.password)
+    if (!match) {
+      res.status(400).json({ message: 'La contraseña es incorrecta'})
+    }
+
+    // Desestructuración con rest operator. _ extrae la propiedad password y la guarda en una variable _ (La saca pero no la usa)
+    // ...publicUser almacena el resto de datos de user. mostraria:
+    // Función: Mostrar todo el usuario menos la contraseña
+    const { password: _, ...publicUser} = user
+    return publicUser // publicUser = {id: ---, name: ---, email: ---}
+
+  } catch (error) {
+    res.send('Error al iniciar sesion', error.message)
+  }
+}
+
+class Validation {
+  static name (name) {
+    if (typeof name !== 'string') throw new Error ('El nombre tiene que ser una cadena de texto')
+    if (name.length < 3) throw new Error ('El nombre tiene que tener un mínimo de 3 carácteres')
+  }
+
+  static email (email) {
+    const emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
+
+    if (typeof email !== 'string') throw new Error('El email debe ser una cadena de texto')
+    if (!email.match(emailFormat)) throw new Error('El email introducido no es válido')
+  }
+
+  static password (password) {
+    if (typeof password !== 'string') throw new Error('La contraseña debe de ser una cadena de texto')
+    if (password.length < 8) throw new Error('La contraseña tiene que tener al menos 8 caractéres')
+  }
+}
