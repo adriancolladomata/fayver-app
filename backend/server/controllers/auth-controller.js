@@ -38,30 +38,19 @@ export const register = async (req, res) => {
 
   try {
     // FIltro para saber si el usuario está registrado o no
-    const user = UserModel.findByEmail(email)
-    if (user) {
-      res.status(400).json({ message: 'El usuario ya está registrado '})
+    const newUser = await UserModel.findByEmail(email)
+    if (newUser) {
+      return res.status(400).json({ message: 'El usuario ya está registrado '})
     }
 
     // Hasheo de la contraseña para mayor seguridad
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
 
-    UserModel.createUser(name, email, passwordHash)
+    await UserModel.createUser(name, email, passwordHash)
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        email: user.email
-      },
-      SECRET_JWT_KEY,
-      {
-        expiresIn: '1h'
-      }
-    )
-
-    res.status(201).json({ message: 'Usuario registrado correctamente', token})
+    res.status(201).json({ message: 'Usuario registrado correctamente'})
   } catch (error) {
-    res.send('Error al registrar el usuario', error.message)
+    res.status(500).json({ message: error.message })
   }
 }
 
@@ -73,25 +62,45 @@ export const login = async (req, res) => {
   Validation.password(password)
 
   try {
-    const user = UserModel.findByEmail(email)
+    const user = await UserModel.findByEmail(email)
 
     if (!user) {
-      res.status(400).json({ message: 'El usuario no está registrado'})
+      return res.status(400).json({ message: 'El usuario no está registrado'})
     }
 
-    const match = await bcrypt (password, user.password)
+    const match = await bcrypt.compare(password, user.password)
     if (!match) {
       res.status(400).json({ message: 'La contraseña es incorrecta'})
     }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email
+      },
+      SECRET_JWT_KEY,
+      {
+        expiresIn: '1h'
+      }
+    )
+    
+    const options = {
+      httpOnly: true, // La cookie solo es accesible en el servidor
+      secure: process.env.NODE_ENV === 'production', // La cookie solo es accesible en https
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
+      maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
+    }
+
+    res.cookie('access_token', token, options)
 
     // Desestructuración con rest operator. _ extrae la propiedad password y la guarda en una variable _ (La saca pero no la usa)
     // ...publicUser almacena el resto de datos de user. mostraria:
     // Función: Mostrar todo el usuario menos la contraseña
     const { password: _, ...publicUser} = user
-    return publicUser // publicUser = {id: ---, name: ---, email: ---}
+    return res.json(publicUser) // publicUser = {id: ---, name: ---, email: ---}
 
   } catch (error) {
-    res.send('Error al iniciar sesion', error.message)
+    res.status(500).json({ message: error.message })
   }
 }
 
