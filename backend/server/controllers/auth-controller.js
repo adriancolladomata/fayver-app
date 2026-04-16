@@ -53,9 +53,9 @@ export const register = async (req, res) => {
 
     await UserModel.createUser(name, email, passwordHash)
 
-    res.status(201).json({ message: 'Usuario registrado correctamente'})
+    return res.status(201).json({ message: 'Usuario registrado correctamente'})
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    return res.status(500).json({ message: error.message })
   }
 }
 
@@ -78,7 +78,7 @@ export const login = async (req, res) => {
     // bcrypt.compare() para saber si la contraseña introducida coincide con la de la base de datos (hasehadas)
     const match = await bcrypt.compare(password, user.password)
     if (!match) {
-      res.status(400).json({ message: 'La contraseña es incorrecta'})
+      return res.status(400).json({ message: 'La contraseña es incorrecta'})
     }
 
     // Instanciación del JSON Web Token, que contiene el id y el email, el secreto del jwt y que expira cada hora
@@ -110,7 +110,7 @@ export const login = async (req, res) => {
     return res.json(publicUser) // publicUser = {id: ---, name: ---, email: ---}
 
   } catch (error) {
-    res.status(500).json({ message: error.message })
+    return res.status(500).json({ message: error.message })
   }
 }
 

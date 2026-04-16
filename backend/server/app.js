@@ -18,8 +18,4 @@ app.get('/', (req, res) => {
   res.send('Servidor iniciado')
 })
 
-app.get('/test', (req, res) => {
-  res.json({ ok: true })
-})
-
 export default app
