@@ -1,0 +1,10 @@
+### Test del registro de usuario
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "name": "Adrián",
+  "email": "test@test.com",
+  "password": "12345678",
+  "confirmPassword": "12345678"
+}

@@ -12,17 +12,19 @@ app.use(cookieParser()) // Middleware
 
 // Middleware para buscar el toquen en todas las rutas
 app.use((req, res, next) => {
-  // Busca una cookie llamada access_token
-  const token = req.cookies.access_token
-  // Inicia sesion y por defecto asigna un null
+  // Busca una cookie llamada access_token /// ? -> Si req.cookies es undefined no da error, sigue el programa
+  const token = req.cookies?.access_token
+  // Asigna un null por defecto a la sesion
   req.session = { user: null }
 
-  try {
-    // Si el token es valido lo decodifica y mete los datos del usuario en request.session user
-    const data = jwt.verify(token, SECRET_JWT_KEY)
-    req.session.user = data
-  } catch (error) {
-    res.send('Error de sesión', error.message)
+  if (token) {
+    try {
+    // Si hay token y es valido lo decodifica y mete los datos del usuario en request.session user
+      const data = jwt.verify(token, SECRET_JWT_KEY)
+      req.session.user = data
+    } catch (error) {
+      req.session = { user: null }
+    }
   }
 
   next() // -> Seguir a la siguiente ruta o middleware
@@ -30,14 +32,17 @@ app.use((req, res, next) => {
 
 // Método para el registro del usuario
 export const register = async (req, res) => {
-  const { name, email, password } = req.body
+  const { name, email, password, confirmPassword} = req.body
 
+  // Validaciones de los parámetros
   Validation.name(name)
   Validation.email(email)
   Validation.password(password)
+  Validation.password(confirmPassword)
+  Validation.matchPasswords(password, confirmPassword)
 
   try {
-    // FIltro para saber si el usuario está registrado o no
+    // Filtro para saber si el usuario está registrado o no
     const newUser = await UserModel.findByEmail(email)
     if (newUser) {
       return res.status(400).json({ message: 'El usuario ya está registrado '})
@@ -58,21 +63,25 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body
 
+  // Validaciones de los parámetros
   Validation.email(email)
   Validation.password(password)
 
   try {
+    // Filtro para saber si el usuario está registrado o no
     const user = await UserModel.findByEmail(email)
 
     if (!user) {
       return res.status(400).json({ message: 'El usuario no está registrado'})
     }
 
+    // bcrypt.compare() para saber si la contraseña introducida coincide con la de la base de datos (hasehadas)
     const match = await bcrypt.compare(password, user.password)
     if (!match) {
       res.status(400).json({ message: 'La contraseña es incorrecta'})
     }
 
+    // Instanciación del JSON Web Token, que contiene el id y el email, el secreto del jwt y que expira cada hora
     const token = jwt.sign(
       {
         id: user.id,
@@ -83,7 +92,7 @@ export const login = async (req, res) => {
         expiresIn: '1h'
       }
     )
-    
+
     const options = {
       httpOnly: true, // La cookie solo es accesible en el servidor
       secure: process.env.NODE_ENV === 'production', // La cookie solo es accesible en https
@@ -91,6 +100,7 @@ export const login = async (req, res) => {
       maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
     }
 
+    // Envia una cookie al navegador del usuario
     res.cookie('access_token', token, options)
 
     // Desestructuración con rest operator. _ extrae la propiedad password y la guarda en una variable _ (La saca pero no la usa)
@@ -101,6 +111,23 @@ export const login = async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ message: error.message })
+  }
+}
+
+export const logout = async (req, res) => {
+  const options = {
+    httpOnly: true, // La cookie solo es accesible en el servidor
+    secure: process.env.NODE_ENV === 'production', // La cookie solo es accesible en https
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
+    maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
+  }
+
+  try {
+    res.clearCookie('access_token', options)
+
+    return res.status(200).json({ message: 'Logout correcto '})
+  } catch (error) {
+    return res.status(500).json({ message: 'Error al hacer logout'})
   }
 }
 
@@ -120,5 +147,9 @@ class Validation {
   static password (password) {
     if (typeof password !== 'string') throw new Error('La contraseña debe de ser una cadena de texto')
     if (password.length < 8) throw new Error('La contraseña tiene que tener al menos 8 caractéres')
+  }
+
+  static matchPasswords (password, confirmPassword) {
+    if (password !== confirmPassword) throw new Error('Las contraseñas no coinciden')
   }
 }

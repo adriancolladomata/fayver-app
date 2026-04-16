@@ -1,5 +1,5 @@
 import { db } from '../database/db.js';
-import crypto, { randomUUID } from 'node:crypto'
+import { randomUUID } from 'node:crypto'
 
 export class UserModel {
   static async findByEmail (email) {
