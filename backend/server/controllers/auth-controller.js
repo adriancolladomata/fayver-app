@@ -76,7 +76,7 @@ export const login = async (req, res) => {
     }
 
     // bcrypt.compare() para saber si la contraseña introducida coincide con la de la base de datos (hasehadas)
-    const match = await bcrypt.compare(password, user.password)
+    const match = await bcrypt.compare(password, user.password_hash)
     if (!match) {
       return res.status(400).json({ message: 'La contraseña es incorrecta'})
     }
@@ -106,7 +106,7 @@ export const login = async (req, res) => {
     // Desestructuración con rest operator. _ extrae la propiedad password y la guarda en una variable _ (La saca pero no la usa)
     // ...publicUser almacena el resto de datos de user. mostraria:
     // Función: Mostrar todo el usuario menos la contraseña
-    const { password: _, ...publicUser} = user
+    const { password_hash: _, ...publicUser} = user
     return res.json(publicUser) // publicUser = {id: ---, name: ---, email: ---}
 
   } catch (error) {
