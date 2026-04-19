@@ -1,34 +1,7 @@
 import bcrypt from 'bcrypt'
-import express from 'express'
 import { UserModel } from '../models/user-model.js'
 import { SALT_ROUNDS, SECRET_JWT_KEY } from '../../config.js'
 import jwt from 'jsonwebtoken'
-import cookieParser from 'cookie-parser'
-
-const app = express()
-app.disable('x-powered-by')
-app.use(express.json()) // Middleware
-app.use(cookieParser()) // Middleware
-
-// Middleware para buscar el toquen en todas las rutas
-app.use((req, res, next) => {
-  // Busca una cookie llamada access_token /// ? -> Si req.cookies es undefined no da error, sigue el programa
-  const token = req.cookies?.access_token
-  // Asigna un null por defecto a la sesion
-  req.session = { user: null }
-
-  if (token) {
-    try {
-    // Si hay token y es valido lo decodifica y mete los datos del usuario en request.session user
-      const data = jwt.verify(token, SECRET_JWT_KEY)
-      req.session.user = data
-    } catch (error) {
-      req.session = { user: null }
-    }
-  }
-
-  next() // -> Seguir a la siguiente ruta o middleware
-})
 
 // Método para el registro del usuario
 export const register = async (req, res) => {

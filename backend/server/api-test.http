@@ -17,3 +17,28 @@ Content-Type: application/json
   "email": "test@test.com",
   "password": "12345678"
 }
+
+### Test de la creación de un tablón 
+POST http://localhost:3000/boards
+Content-Type: application/json
+
+{
+  "name": "Tablón para borrar"
+}
+
+### Test de la obtención de los tablones 
+GET http://localhost:3000/boards
+
+### Test de la obtención de un tablón
+GET http://localhost:3000/boards/6774cdb8-d001-4bc3-bea3-8f6ecd217e18
+
+### Test de modificación de un tablón 
+PUT http://localhost:3000/boards/6774cdb8-d001-4bc3-bea3-8f6ecd217e18
+Content-Type: application/json
+
+{
+  "name": "Tablón modificado"
+}
+
+### Test para borrar un tablón
+PUT http://localhost:3000/boards/ed84d03d-1fa1-48cb-af8c-1231034cbab0
