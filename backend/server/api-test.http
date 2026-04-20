@@ -30,10 +30,10 @@ Content-Type: application/json
 GET http://localhost:3000/boards
 
 ### Test de la obtención de un tablón
-GET http://localhost:3000/boards/cbe8d584-9293-4f8a-8dba-08beaa9e6ff9
+GET http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
 
 ### Test de modificación de un tablón
-PUT http://localhost:3000/boards/cbe8d584-9293-4f8a-8dba-08beaa9e6ff9
+PUT http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
 Content-Type: application/json
 
 {
@@ -41,4 +41,7 @@ Content-Type: application/json
 }
 
 ### Test para borrar un tablón
-DELETE http://localhost:3000/boards/cbe8d584-9293-4f8a-8dba-08beaa9e6ff9
+DELETE http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
+
+### Test para crear una lista
+POST http://localhost:3000/lists?boardId=b7658cad-df31-4de9-8298-ffbab1ea6001

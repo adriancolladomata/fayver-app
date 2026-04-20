@@ -4,10 +4,12 @@ import { requireAuth } from '../middlewares/auth.js'
 
 const router = Router()
 
-router.post('/', requireAuth, create)
-router.get('/', requireAuth, showBoards)
-router.get('/:id', requireAuth, showBoard)
-router.put('/:id', requireAuth, modifyBoard)
-router.delete('/:id', requireAuth, softDeleteBoard)
+router.use(requireAuth)
+
+router.post('/', create)
+router.get('/', showBoards)
+router.get('/:id', showBoard)
+router.put('/:id', modifyBoard)
+router.delete('/:id', softDeleteBoard)
 
 export default router
