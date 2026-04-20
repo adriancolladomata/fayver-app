@@ -8,6 +8,6 @@ router.post('/', requireAuth, create)
 router.get('/', requireAuth, showBoards)
 router.get('/:id', requireAuth, showBoard)
 router.put('/:id', requireAuth, modifyBoard)
-router.put('/:id', requireAuth, softDeleteBoard)
+router.delete('/:id', requireAuth, softDeleteBoard)
 
 export default router

@@ -23,22 +23,22 @@ POST http://localhost:3000/boards
 Content-Type: application/json
 
 {
-  "name": "Tablón para borrar"
+  "name": "Tablón de definitivo"
 }
 
 ### Test de la obtención de los tablones 
 GET http://localhost:3000/boards
 
 ### Test de la obtención de un tablón
-GET http://localhost:3000/boards/6774cdb8-d001-4bc3-bea3-8f6ecd217e18
+GET http://localhost:3000/boards/cbe8d584-9293-4f8a-8dba-08beaa9e6ff9
 
-### Test de modificación de un tablón 
-PUT http://localhost:3000/boards/6774cdb8-d001-4bc3-bea3-8f6ecd217e18
+### Test de modificación de un tablón
+PUT http://localhost:3000/boards/cbe8d584-9293-4f8a-8dba-08beaa9e6ff9
 Content-Type: application/json
 
 {
-  "name": "Tablón modificado"
+  "name": "Tablón de definitivo cambiado"
 }
 
 ### Test para borrar un tablón
-PUT http://localhost:3000/boards/ed84d03d-1fa1-48cb-af8c-1231034cbab0
+DELETE http://localhost:3000/boards/cbe8d584-9293-4f8a-8dba-08beaa9e6ff9

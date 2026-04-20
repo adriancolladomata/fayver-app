@@ -15,7 +15,7 @@ export class BoardModel {
   }
 
   static async getBoard (id, owner_id) {
-    const [rows] = await db.query('SELECT * FROM boards WHERE id = ? AND owner_id = ? AND deleted_at IS NULL',
+    const [rows] = await db.query('SELECT * FROM boards WHERE id = ? AND owner_id = ?',
       [id, owner_id]
     )
 
@@ -32,7 +32,8 @@ export class BoardModel {
 
   static async deleteBoard (id, owner_id)  {
     const [result] = await db.query(
-      'UPDATE boards SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND owner_id = ? and deleted_at IS NULL',
+      // No se coloca el filtro deleted_at IS NULL para manejar el error en el Controller
+      'UPDATE boards SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND owner_id = ?',
       [id, owner_id]
     )
 
