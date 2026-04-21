@@ -1,11 +1,45 @@
 import { db } from '../database/db.js'
 
-class ListModel {
+export class ListModel {
   // Funcion para crear una lista
-  static async createList (id, name, board_id, order) {
-    await db.query('INSERT INTO list (id, name, board_id, \`order\`, color) VALUES (?, ?, ?, ?, ?)',
-      [id, name, board_id, order]
+  static async createList (id, name, board_id, order, color) {
+    await db.query('INSERT INTO lists (id, name, board_id, \`order\`, color) VALUES (?, ?, ?, ?, ?)',
+      [id, name, board_id, order, color]
     )
+  }
+
+  static async getLists (board_id) {
+    const [rows] = await db.query('SELECT * FROM lists WHERE board_id = ? AND deleted_at IS NULL ORDER BY `order` ASC',
+      [board_id]
+    )
+
+    return rows
+  }
+
+
+  static async getList (id, board_id) {
+    const [rows] = await db.query('SELECT * FROM lists WHERE id = ? AND board_id = ? AND deleted_at IS NULL',
+      [id, board_id]
+    )
+
+    return rows[0]
+  }
+
+  // Al ponerlo como objeto, no importa el orden en el que se introduzcan los datos, ideal para actualizaciones parciales,
+  // como esta, que incluyen varios datos que se pueden actualizar.
+  static async modifyList (id, board_id, { name, isShowed, order, color }) {
+    const [result] = await db.query(`UPDATE lists SET 
+      name COALESCE(?, name),
+      color COALESCE(?, color),
+      \`order\` COALESCE(?, \`order\`),
+      is_showed COALESCE(?, is_showed)
+      WHERE id = ? AND board_id = ? AND deleted_at IS NULL`,
+    [name ?? null, color ?? null, order ?? null, isShowed ?? null, id, board_id]
+    )
+
+    return result
+
+    // Revisar fncion y seguir con el controller
   }
 
   // Función para obtener el numero de orden de la última lista del tablón

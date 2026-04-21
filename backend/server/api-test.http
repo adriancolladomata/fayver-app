@@ -44,4 +44,16 @@ Content-Type: application/json
 DELETE http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
 
 ### Test para crear una lista
-POST http://localhost:3000/lists?boardId=b7658cad-df31-4de9-8298-ffbab1ea6001
+POST http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists
+Content-Type: application/json
+
+{
+  "name": "Done",
+  "color": "#aaaaaa"
+}
+
+### Test de la obtención de una única lista
+GET http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists/
+
+### Test de la obtención de una única lista
+GET http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists/c17f5fb9-64ae-49b6-8809-d10b5d23753d

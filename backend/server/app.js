@@ -15,7 +15,7 @@ app.use(cookieParser())
 // Rutas
 app.use('/auth', authRoutes)
 app.use('/boards', boardRoutes)
-app.use('/lists', listRoutes)
+app.use('/boards/:boardId/lists', listRoutes)
 
 // Ruta raíz (opcional)
 app.get('/', (req, res) => {
