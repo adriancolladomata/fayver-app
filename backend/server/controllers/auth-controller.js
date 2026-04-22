@@ -1,22 +1,27 @@
 import bcrypt from 'bcrypt'
 import { UserModel } from '../models/user-model.js'
+import { validateUser, validatePartialUser, validateLogin } from '../schemas/user-schema.js'
 import { SALT_ROUNDS, SECRET_JWT_KEY } from '../../config.js'
 import jwt from 'jsonwebtoken'
 
 // Método para el registro del usuario
 export const register = async (req, res) => {
-  const { name, email, password, confirmPassword} = req.body
+  const validation = validateUser(req.body)
 
-  // Validaciones de los parámetros
-  Validation.name(name)
-  Validation.email(email)
-  Validation.password(password)
-  Validation.password(confirmPassword)
-  Validation.matchPasswords(password, confirmPassword)
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+  }
 
   try {
+    //Istanciación de los campos mediante validation.data (schema zod)
+    const { name, email, password, confirmPassword } = validation.data
+
+    // Validación de que ambas contraseñas son iguales
+    Validation.matchPasswords(password, confirmPassword)
+
     // Filtro para saber si el usuario está registrado o no
     const newUser = await UserModel.findByEmail(email)
+
     if (newUser) {
       return res.status(400).json({ message: 'El usuario ya está registrado '})
     }
@@ -34,13 +39,15 @@ export const register = async (req, res) => {
 
 // Método para el inicio de sesión del usuario
 export const login = async (req, res) => {
-  const { email, password } = req.body
+  const validation = validateLogin(req.body)
 
-  // Validaciones de los parámetros
-  Validation.email(email)
-  Validation.password(password)
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+  }
 
   try {
+    const { email, password } = validation.data
+
     // Filtro para saber si el usuario está registrado o no
     const user = await UserModel.findByEmail(email)
 
@@ -105,23 +112,6 @@ export const logout = async (req, res) => {
 }
 
 class Validation {
-  static name (name) {
-    if (typeof name !== 'string') throw new Error ('El nombre tiene que ser una cadena de texto')
-    if (name.length < 3) throw new Error ('El nombre tiene que tener un mínimo de 3 carácteres')
-  }
-
-  static email (email) {
-    const emailFormat = /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/;
-
-    if (typeof email !== 'string') throw new Error('El email debe ser una cadena de texto')
-    if (!email.match(emailFormat)) throw new Error('El email introducido no es válido')
-  }
-
-  static password (password) {
-    if (typeof password !== 'string') throw new Error('La contraseña debe de ser una cadena de texto')
-    if (password.length < 8) throw new Error('La contraseña tiene que tener al menos 8 caractéres')
-  }
-
   static matchPasswords (password, confirmPassword) {
     if (password !== confirmPassword) throw new Error('Las contraseñas no coinciden')
   }

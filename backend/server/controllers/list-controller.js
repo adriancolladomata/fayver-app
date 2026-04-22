@@ -73,7 +73,9 @@ export const showLists = async (req, res) => {
 }
 
 export const modifyList = async (req, res) => {
-  // Seguir por aqui y revisar modifyList del ListModel
+  const { name, color, order, isShowed } = req.body
+  const { boardId, listId } = req.params
+  const ownerId = req.user.id
 }
 
 // Clase Validation para optimización de código

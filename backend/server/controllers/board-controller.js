@@ -1,14 +1,20 @@
 import { BoardModel } from '../models/board-model.js'
 import { randomUUID } from 'node:crypto'
+import { validateBoard, validatePartialBoard } from '../schemas/board-schema.js'
 
 // Metodo para crear el tablón
 export const create = async (req, res) => {
-  // Obtención del nombre mediante el body de la request
-  const { name } = req.body
+  // Validación del nombre mediante el esquema de validación de zod
+  const validation = validateBoard(req.body)
+
+  // SI el resultado no es exitoso, lanzamos un HTTP Status 400
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+  }
 
   try {
-    // Validacion del nombre
-    Validation.name(name)
+    // Asignación del nombre mediante result.data (schema de zod)
+    const { name } = validation.data
 
     // Instanciación del id con randomUUID(), owner_id mediante el token del usuario activo, y share_token con randomUUID()
     const id = randomUUID()
@@ -64,20 +70,27 @@ export const showBoard = async (req, res) => {
 
 // Método para modificar un tablón
 export const modifyBoard = async (req, res) => {
-  // Obtención de la id mediante parámetros de la URL, del nombre mediante el body de la request, y el owner_id del token del usuario activo
+  // Obtención de la id mediante parámetros de la URL, y el owner_id del token del usuario activo
   const { id } = req.params
-  const { name } = req.body
   const owner_id = req.user.id
 
-  try {
-    // Validación del nombre
-    Validation.name(name)
+  // Validación parcial, para que en caso de que no se asigne ningun valor a modificar, no de error, success se asigna como un {} vacio
+  const validation = validatePartialBoard(req.body)
 
-    // Obtención del resultado de la modificación y del tablón
-    const result = await BoardModel.updateBoard(id, name, owner_id)
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+  }
+
+  try {
     const board = await BoardModel.getBoard(id, owner_id)
 
+    Validation.noBoard(board)
     Validation.isDeleted(board)
+
+    // Extraemos el nombre despues ya que al ser opcional puede (de manera erronea) asignarse undefinded si es un partial vacio (zod)
+    const { name } = validation.data
+
+    const result = await BoardModel.updateBoard(id, name, owner_id)
 
     // Si affectedRows (propiedad de result) es 0, entonces no se ha modificado ningun tablón, por lo que no se ha encontrado
     if (result.affectedRows === 0) {
@@ -100,7 +113,8 @@ export const softDeleteBoard = async (req, res) => {
     // Obtención del tablón
     const board = await BoardModel.getBoard(id, owner_id)
 
-    // Si el tablón no es null ya estaba eliminado
+    // Validaciones
+    Validation.noBoard(board)
     Validation.isDeleted(board)
 
     // Obtención del result de la eliminación
@@ -119,16 +133,13 @@ export const softDeleteBoard = async (req, res) => {
 
 // Clase Validation para optimización de código
 class Validation {
-  // Validación del nombre introducido del tablón
-  static name (name) {
-    if (typeof name !== 'string') throw new Error ('El nombre tiene que ser una cadena de texto')
-    if (name.length < 3) throw new Error ('El nombre tiene que tener un mínimo de 3 carácteres')
-  }
 
+  // Validación para saber si el tablón está borrado
   static isDeleted (board) {
     if (board.deleted_at !== null) throw new Error ('El tablón se encuentra eliminado desde: ' + board.deleted_at)
   }
 
+  // Validación para saber si el tablón existe o no
   static noBoard (board) {
     if (!board) throw new Error ('Tablón no encontrado')
   }

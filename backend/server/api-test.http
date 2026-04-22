@@ -4,9 +4,9 @@ Content-Type: application/json
 
 {
   "name": "Adrian",
-  "email": "test@test.com",
-  "password": "12345678",
-  "confirmPassword": "12345678"
+  "email": "adrian@adrian.es",
+  "password": "Adrian112313_",
+  "confirmPassword": "Adrian112313_"
 }
 
 ### Test del inicio de sesión del usuario
@@ -14,8 +14,8 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "email": "test@test.com",
-  "password": "12345678"
+  "email": "adrian@adrian.es",
+  "password": "Adrian112313_"
 }
 
 ### Test de la creación de un tablón 
@@ -23,25 +23,25 @@ POST http://localhost:3000/boards
 Content-Type: application/json
 
 {
-  "name": "Tablón de definitivo"
+  "name": "Tablon crado con validacion Zod"
 }
 
 ### Test de la obtención de los tablones 
 GET http://localhost:3000/boards
 
 ### Test de la obtención de un tablón
-GET http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
+GET http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
 
 ### Test de modificación de un tablón
-PUT http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
+PUT http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
 Content-Type: application/json
 
 {
-  "name": "Tablón de definitivo cambiado"
+  "name": "Tablon modificado con validacion Zod"
 }
 
 ### Test para borrar un tablón
-DELETE http://localhost:3000/boards/7ddb7fb3-fa49-49a3-9140-f5fbdf52e838
+DELETE http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
 
 ### Test para crear una lista
 POST http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists

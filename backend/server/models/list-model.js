@@ -29,17 +29,15 @@ export class ListModel {
   // como esta, que incluyen varios datos que se pueden actualizar.
   static async modifyList (id, board_id, { name, isShowed, order, color }) {
     const [result] = await db.query(`UPDATE lists SET 
-      name COALESCE(?, name),
-      color COALESCE(?, color),
-      \`order\` COALESCE(?, \`order\`),
-      is_showed COALESCE(?, is_showed)
+      name = COALESCE(?, name),
+      color = COALESCE(?, color),
+      \`order\` = COALESCE(?, \`order\`),
+      is_showed = COALESCE(?, is_showed)
       WHERE id = ? AND board_id = ? AND deleted_at IS NULL`,
     [name ?? null, color ?? null, order ?? null, isShowed ?? null, id, board_id]
     )
 
     return result
-
-    // Revisar fncion y seguir con el controller
   }
 
   // Función para obtener el numero de orden de la última lista del tablón
