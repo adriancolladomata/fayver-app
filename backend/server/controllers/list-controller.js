@@ -1,20 +1,23 @@
 import { BoardModel } from '../models/board-model.js'
 import { ListModel } from '../models/list-model.js'
+import { validateList, validatePartialList } from '../schemas/list-schema.js'
 import { randomUUID } from 'node:crypto'
-import { modifyBoard } from './board-controller.js'
 
 export const createList = async (req, res) => {
-  const { name } = req.body
-  const { color } = req.body ?? '#ffffff'
   const ownerId = req.user.id
   const { boardId } = req.params
+  const validation = validateList(req.body)
+
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+  }
 
   try {
-    Validation.name(name)
+    const { name, color } = validation.data
+
     Validation.noBoardId(boardId)
 
     const board = await BoardModel.getBoard(boardId, ownerId)
-
     Validation.noBoard(board)
 
     const listId = randomUUID()
@@ -37,12 +40,10 @@ export const showList = async (req, res) => {
     Validation.noListId(listId)
 
     const board = await BoardModel.getBoard(boardId, ownerId)
-
     Validation.noBoard(board)
     Validation.isDeleted(board)
 
     const list = await ListModel.getList(listId, boardId)
-
     Validation.noList(list)
     Validation.isDeleted(list)
 
@@ -60,12 +61,10 @@ export const showLists = async (req, res) => {
     Validation.noBoardId(boardId)
 
     const board = await BoardModel.getBoard(boardId, ownerId)
-
     Validation.noBoard(board)
-    Validation.isDeleted(board)
+    Validation.issDeleted(board)
 
     const lists = await ListModel.getLists(boardId)
-
     res.json(lists)
   } catch (error) {
     return res.status(500).json({ message: error.message })
@@ -73,21 +72,58 @@ export const showLists = async (req, res) => {
 }
 
 export const modifyList = async (req, res) => {
-  const { name, color, order, isShowed } = req.body
+  // Instanciación de las variables necesarias
   const { boardId, listId } = req.params
   const ownerId = req.user.id
+  // Realización de la validación de los valores recibidos en el body (Partial por que pueden estar o
+  // no ya que es un Update y no hay por que modificar todos los valores de la lista)
+  const validation = validatePartialList(req.body)
+
+  // Si la validación no es exitosa, lanza un error
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+  }
+
+  try {
+    // Validación si no hay boardId como parámetro en la URL 
+    Validation.noBoardId(boardId)
+
+    // Obtención del tablón
+    const board = await BoardModel.getBoard(boardId, ownerId)
+    // Validación para saber si hay tablón o no y si está eliminado
+    Validation.noBoard(board)
+    Validation.isDeleted(board)
+
+    // Validación si no hay listId como parámetro en la URL
+    Validation.noListId(listId)
+
+    // Obtencion de la lista
+    const list = await ListModel.getList(listId, boardId)
+    // Validación para saber si hay lista o no y si está eliminada
+    Validation.noList(list)
+    Validation.isDeleted(list)
+
+    // Modificación de la lista
+    // Gracias al instanciarse como objetos en el model, no se requiere de orden por lo que podemos pasar validation.data de manera directa
+    const result = await ListModel.modifyList(listId, boardId, validation.data)
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: 'No se pudieron realizar cambios' })
+    }
+
+    // Respuesta con datos actualizados, cobinamos los datos viejos con los nuevos
+    const updatedList = { ...list, ...validation.data}
+
+    return res.status(200).json({ message: 'Lista modificada con éxito ', list: updatedList })
+  } catch (error) {
+    return res.status(500).json({ message: error.message })
+  }
 }
 
 // Clase Validation para optimización de código
 class Validation {
-  // Validación del nombre introducido del tablón
-  static name (name) {
-    if (typeof name !== 'string') throw new Error ('El nombre tiene que ser una cadena de texto')
-    if (name.length < 3) throw new Error ('El nombre tiene que tener un mínimo de 3 carácteres')
-  }
-
-  static isDeleted (board) {
-    if (board.deleted_at !== null) throw new Error ('El tablón se encuentra eliminado desde: ' + board.deleted_at)
+  static isDeleted (element) {
+    if (element.deleted_at !== null) throw new Error ('El elemento se encuentra eliminado desde: ' + element.deleted_at)
   }
 
   static noBoardId (boardId) {
