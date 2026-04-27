@@ -14,7 +14,7 @@ const listSchema = z.object({
   }).default('#ffffff'),
 
   // Validamos isShowed como un número que solo puede ser 0 o 1 (TINYINT)
-  isShowed: z.number().int().min(0).max(1).default(1),
+  is_showed: z.number().int().min(0).max(1).default(1),
 
   // Validamos order como un entero que empieza en 0
   order: z.number().int().min(0, 'El orden no puede ser negativo').optional()

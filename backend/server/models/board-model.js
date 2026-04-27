@@ -1,5 +1,4 @@
 import { db } from '../database/db.js'
-import { randomUUID } from 'node:crypto'
 
 export class BoardModel {
   static async createBoard (id, name, owner_id, share_token) {

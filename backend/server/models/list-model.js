@@ -81,4 +81,14 @@ export class ListModel {
       connection.release()
     }
   }
+
+  // Función para eliminar (parcialmente, modificando el deleted_at) una lista
+  static async deleteList (id, board_id) {
+    const [result] = await db.query ('UPDATE lists SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND board_id = ?',
+      [id, board_id]
+    )
+
+    return result
+  }
+
 }

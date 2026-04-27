@@ -33,7 +33,7 @@ GET http://localhost:3000/boards
 GET http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
 
 ### Test de modificación de un tablón
-PUT http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
+PUT http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67
 Content-Type: application/json
 
 {
@@ -44,16 +44,53 @@ Content-Type: application/json
 DELETE http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
 
 ### Test para crear una lista
-POST http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists
+POST http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists
 Content-Type: application/json
 
 {
-  "name": "Done",
+  "name": "To-Do",
   "color": "#aaaaaa"
 }
 
-### Test de la obtención de una única lista
-GET http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists/
+### Test de la obtención de las listas de un tablon
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/
 
 ### Test de la obtención de una única lista
-GET http://localhost:3000/boards/b7658cad-df31-4de9-8298-ffbab1ea6001/lists/c17f5fb9-64ae-49b6-8809-d10b5d23753d
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/a29b785f-5ae6-4479-8028-47b461a06b62
+
+### Test de la modificación de una lista
+PATCH http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/a29b785f-5ae6-4479-8028-47b461a06b62
+Content-Type: application/json
+
+{
+  "name": "Undone",
+  "is_showed": 0,
+  "order": 0,
+  "color": "#324233"
+}
+
+### Test de la modificación del orden de las listas mediante Drag & Drop
+PATCH http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/action/reorder
+Content-Type: application/json
+
+[
+  {
+    "id": "a29b785f-5ae6-4479-8028-47b461a06b62",
+    "order": 0
+  },
+  {
+    "id": "078615dc-c633-49a2-a51c-36d9fe4e1da9",
+    "order": 1
+  }
+]
+
+### Test para eliminar una lista
+DELETE http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/a29b785f-5ae6-4479-8028-47b461a06b62
+
+### Test para la creación de una tarea
+POST http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9
+Content-Type: application/json
+
+{
+  "name": "Realización de las tareas"
+}
