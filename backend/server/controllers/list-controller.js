@@ -85,72 +85,95 @@ export const modifyList = async (req, res) => {
   // Instanciación de las variables necesarias
   const { boardId, listId } = req.params
   const ownerId = req.user.id
-  // Realización de la validación de los valores recibidos en el body (Partial por que pueden estar o
-  // no ya que es un Update y no hay por que modificar todos los valores de la lista)
+
+  // Validación parcial de Zod (pueden venir todos los campos o solo uno)
   const validation = validatePartialList(req.body)
 
-  // Si la validación no es exitosa, lanza un error
+  // si la validación no es exitosa, lanza un error
   if (!validation.success) {
-    return res.status(400).json({ error: validation.error.flatten().fieldErrors})
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors })
   }
 
   try {
-    // Validación si no hay boardId como parámetro en la URL
+    // Validaciones de existencia del tablón y de la lista
     Validation.noBoardId(boardId)
-
-    // Obtención del tablón
     const board = await BoardModel.getBoard(boardId, ownerId)
-    // Validación para saber si hay tablón o no y si está eliminado
     Validation.noBoard(board)
     Validation.isDeleted(board)
 
-    // Validación si no hay listId como parámetro en la URL
     Validation.noListId(listId)
-
-    // Obtencion de la lista
     const list = await ListModel.getList(listId, boardId)
-    // Validación para saber si hay lista o no y si está eliminada
     Validation.noList(list)
     Validation.isDeleted(list)
 
+    // Separación de campos: el 'order' se maneja aparte del resto
+    // separamos el orden de los demas por que cambiar, por ejemplo el nombre, solo cambia una lista, pero cambiar el orden cambia todas
     const { order: newOrder, ...otherFields } = validation.data
+    // Booleano para indicar si la lista ha sido reordenada o no
+    let hasReordered = false
 
-    // Si la el orden de la lista ha cambiado, entramos en el condicional
+    // Lógica de reordenamiento (Drag & Drop)
+    // Si newOrder ha cambiado, entramos en el condicional
     if (newOrder !== undefined && newOrder !== list.order) {
-      // Obtenemos todas las listas del tablón
+      // Instanciación de todas las listas del tablon
       let allLists = await ListModel.getLists(boardId)
 
-      // Obtenemos la lista que vamos a mover mediante un find
+      // Obtención de la lista a mover mediante el metodo find
       const listToMove = allLists.find(l => l.id === listId)
-      // Modificamos allLists para que no contenga la lista que vamos a mover con un filter
-      allLists = allLists.filter(l => l.id !== listId)
+      // Si se encuentra la lista, ejecuta el condicional
+      if (listToMove) {
+        // allLists ahora no contiene la lista a mover gracias al filter
+        allLists = allLists.filter(l => l.id !== listId)
 
-      // Insertamos la lista en la nueva posición. Splice maneja el desplazamiento de los demás automáticamente.
-      // (posicion donde se inserta, elementos a borrar, elemento a insertar)
-      allLists.splice(newOrder, 0, listToMove)
+        // El splice maneja el desplazamiento de los demás automáticamente
+        allLists.splice(newOrder, 0, listToMove)
 
-      // Generamos el nuevo mapa de órdenes con un .map que recorrerá cada lista (0, 1, 2...)
-      const reorderData = allLists.map((l, index) => ({
-        id: l.id,
-        order: index
-      }))
+        // Con un map hacemos un reorder de todas las listas
+        const reorderData = allLists.map((l, index) => ({
+          id: l.id,
+          order: index
+        }))
 
-      // Aplicamos el reordenamiento en una transacción
-      await ListModel.reorderLists(boardId, reorderData)
+        // Ejecutamos el reorder y marcamos el booleano como true
+        await ListModel.reorderLists(boardId, reorderData)
+        hasReordered = true
+      }
     }
 
-    // Modificación de la lista
-    // Gracias al instanciarse como objetos en el model, no se requiere de orden por lo que podemos pasar validation.data de manera directa
-    const result = await ListModel.modifyList(listId, boardId, validation.data)
-
-    if (result.affectedRows === 0) {
-      return res.status(400).json({ message: 'No se pudieron realizar cambios' })
+    // Logíca de actualizacaión del resto de campos sin order
+    // Instanciación de un booleano para saber si se han modificado los campos
+    let hasModifiedFields = false
+    // Object.keys() pregunta si hay algo dentro de es epaquete, es decir, si el usuario solo movio el ordern su longitud sera de 0
+    // si movió algo mas, será mayor de 0, y entrará en el condicional
+    if (Object.keys(otherFields).length > 0) {
+      // Modificación de la lista
+      const result = await ListModel.modifyList(listId, boardId, otherFields)
+      // Si ha ocurrido la modificación, asignamos el booleano a true
+      if (result.affectedRows > 0) {
+        hasModifiedFields = true
+      }
     }
 
-    // Respuesta con datos actualizados, cobinamos los datos viejos con los nuevos
-    const updatedList = { ...list, ...validation.data}
+    // Si no ha ocurrido ninguna de las dos acciones, enviamos un mensaje como feedback
+    if (!hasReordered && !hasModifiedFields) {
+      return res.status(400).json({
+        message: 'No se realizaron cambios (los datos enviados coinciden con los actuales o están vacíos)'
+      })
+    }
 
-    return res.status(200).json({ message: 'Lista modificada con éxito ', list: updatedList })
+    // Enviamos una respuesta exitosa con el objeto actualizado
+    // Combinamos los datos viejos (list) + cambios enviados (validation.data)
+    const updatedList = {
+      ...list,
+      ...validation.data
+    }
+
+    // Return con la lista modificada y sus cambios
+    return res.status(200).json({
+      message: 'Lista modificada con éxito',
+      list: updatedList
+    })
+
   } catch (error) {
     return res.status(500).json({ message: error.message })
   }

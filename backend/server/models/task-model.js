@@ -33,6 +33,50 @@ export class TaskModel {
     // la lista que será introducida en el controller
     return rows[0].maxOrder ?? -1
   }
+
+  // Al igual que en las listas, usamos un objeto para desestructurar los campos.
+  // Esto permite que desde el controller solo pases lo que quieres cambiar.
+  static async modifyTask (id, list_id, { name, content, order, color, label, status, isArchived }) {
+    const [result] = await db.query(`UPDATE tasks SET 
+      name = COALESCE(?, name),
+      content = COALESCE(?, content),
+      \`order\` = COALESCE(?, \`order\`),
+      color = COALESCE(?, color),
+      label = COALESCE(?, label),
+      status = COALESCE(?, status),
+      is_archived = COALESCE(?, is_archived)
+      WHERE id = ? AND list_id = ? AND deleted_at IS NULL`,
+    [
+      name ?? null, content ?? null, order ?? null, color ?? null, label ?? null, status ?? null, isArchived ?? null,
+      id, list_id
+    ])
+
+    return result
+  }
+
+  // Reordenamiento de tareas mediante transacciones (indispensable para Drag & Drop)
+  // Se usa el mismo sistema que en el reorder de las listas
+  static async reorderTasks (list_id, tasks) {
+    const connection = await db.getConnection()
+
+    try {
+      await connection.beginTransaction()
+
+      for (const task of tasks) {
+        await connection.query(
+          'UPDATE tasks SET `order` = ? WHERE id = ? AND list_id = ?',
+          [task.order, task.id, list_id]
+        )
+      }
+
+      await connection.commit()
+    } catch (error) {
+      await connection.rollback()
+      throw error
+    } finally {
+      connection.release()
+    }
+  }
 }
 
 

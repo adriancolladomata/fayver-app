@@ -30,10 +30,10 @@ Content-Type: application/json
 GET http://localhost:3000/boards
 
 ### Test de la obtención de un tablón
-GET http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
+GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9
 
 ### Test de modificación de un tablón
-PUT http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67
+PUT http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9
 Content-Type: application/json
 
 {
@@ -44,7 +44,7 @@ Content-Type: application/json
 DELETE http://localhost:3000/boards/04c5f12c-6f8d-4942-ba91-3302e0deb7d9
 
 ### Test para crear una lista
-POST http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists
+POST http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists
 Content-Type: application/json
 
 {
@@ -53,13 +53,13 @@ Content-Type: application/json
 }
 
 ### Test de la obtención de las listas de un tablon
-GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/
+GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/
 
 ### Test de la obtención de una única lista
-GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/a29b785f-5ae6-4479-8028-47b461a06b62
+GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447
 
 ### Test de la modificación de una lista
-PATCH http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/a29b785f-5ae6-4479-8028-47b461a06b62
+PATCH http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447
 Content-Type: application/json
 
 {
@@ -88,9 +88,15 @@ Content-Type: application/json
 DELETE http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/a29b785f-5ae6-4479-8028-47b461a06b62
 
 ### Test para la creación de una tarea
-POST http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9
+POST http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447/tasks
 Content-Type: application/json
 
 {
   "name": "Realización de las tareas"
 }
+
+### Test para la obtención de las tareas de una lista
+GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447/tasks
+
+### Test para la obtención de una única tarea de una lista
+GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447/tasks/ffb78fb8-2779-499e-a250-61474ffad858
