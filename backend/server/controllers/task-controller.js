@@ -1,7 +1,7 @@
 import { BoardModel } from '../models/board-model.js'
 import { ListModel } from '../models/list-model.js'
 import { TaskModel } from '../models/task-model.js'
-import { validatepartialTask, validateTask, validateReordertTasks } from '../schemas/task-schema.js'
+import { validatePartialTask, validateTask, validateReorderTasks } from '../schemas/task-schema.js'
 import { randomUUID } from 'node:crypto'
 
 export const createTask = async (req, res) => {
@@ -92,7 +92,7 @@ export const showTasks = async (req, res) => {
 export const modifyTask = async (req, res) => {
   const { boardId, listId, taskId } = req.params
   const ownerId = req.user.id
-  const validation = validatepartialTask
+  const validation = validatePartialTask(req.body)
 
   if (!validation.success) {
     return res.status(400).json({ error: validation.error.flatten().fieldErrors})
@@ -113,8 +113,147 @@ export const modifyTask = async (req, res) => {
     const task = await TaskModel.getTask(taskId, listId)
     Validation.noTask(task)
     Validation.isDeleted(task)
+
+    const { order: newOrder, ...otherFields } = validation.data
+    let hasReordered = false
+
+    if (newOrder !== undefined && newOrder !== task.order) {
+      let allTasks = await TaskModel.getTasks(listId)
+
+      const taskToMove = allTasks.find(element => element.id === taskId)
+
+      if (taskToMove) {
+        allTasks = allTasks.filter(element => element.id !== taskId)
+
+        allTasks.splice(newOrder, 0, taskToMove)
+
+        const reorderData = allTasks.map((element, index) => ({
+          id: element.id,
+          order: index
+        }))
+
+        await TaskModel.reorderTasks(listId, reorderData)
+        hasReordered = true
+      }
+    }
+
+    let hasModifiedFields = false
+
+    if (Object.keys(otherFields).length > 0) {
+      // Modificación de la tarea
+      const result = await TaskModel.modifyTask(taskId, listId, otherFields)
+      // Si ha ocurrido la modificación, asignamos el booleano a true
+      if (result.affectedRows > 0) {
+        hasModifiedFields = true
+      }
+    }
+
+    // Si no ha ocurrido ninguna de las dos acciones, enviamos un mensaje como feedback
+    if (!hasReordered && !hasModifiedFields) {
+      return res.status(400).json({
+        message: 'No se realizaron cambios (los datos enviados coinciden con los actuales o están vacíos)'
+      })
+    }
+
+    // Enviamos una respuesta exitosa con el objeto actualizado
+    // Combinamos los datos viejos (list) + cambios enviados (validation.data)
+    const updatedTask = {
+      ...task,
+      ...validation.data
+    }
+
+    // Return con la lista modificada y sus cambios
+    return res.status(200).json({
+      message: 'Tarea modificada con éxito',
+      list: updatedTask
+    })
+
   } catch (error) {
     return res.status(500).json({ message: error.message })
+  }
+}
+
+// Función para reordenar todas las listas directamente (Drag & Drop relacionado en el Front-end)
+export const updateTaskOrder = async (req, res) => {
+  // Instanciación
+  const { boardId, listId } = req.params
+  const ownerId = req.user.id
+
+  // Validamos que el body sea un array de: { id: string, order: number }
+  const validation = validateReorderTasks(req.body)
+
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.flatten().fieldErrors })
+  }
+
+  try {
+
+    Validation.noBoardId(boardId)
+    const board = await BoardModel.getBoard(boardId, ownerId)
+    Validation.noBoard(board)
+    Validation.isDeleted(board)
+
+    Validation.noListId(listId)
+    const list = await ListModel.getList(listId, boardId)
+    Validation.noList(list)
+    Validation.isDeleted(list)
+
+    // Ejecutamos la transacción masiva directamente
+    // validation.data ya es el array limpio de objetos [{id, order}, ...]
+    await TaskModel.reorderTasks(listId, validation.data)
+
+    return res.status(200).json({
+      message: 'Orden de las tareas actualizado correctamente'
+    })
+
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Error al procesar el reordenamiento: ' + error.message
+    })
+  }
+}
+
+export const softDeleteTask = async (req, res) => {
+  const { boardId, listId, taskId } = req.params
+  const ownerId = req.user.id
+
+  try {
+    Validation.noBoardId(boardId)
+    const board = await BoardModel.getBoard(boardId, ownerId)
+    Validation.noBoard(board)
+    Validation.isDeleted(board)
+
+    Validation.noListId(listId)
+    const list = await ListModel.getList(listId, boardId)
+    Validation.noList(list)
+    Validation.isDeleted(list)
+
+    Validation.noTask(taskId)
+    const task = await TaskModel.getTask(taskId, listId)
+    Validation.noTask(task)
+    Validation.isDeleted(task)
+
+    const result = await TaskModel.deleteTask(taskId, listId)
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: 'No ha sido posible eliminar la tarea '})
+    }
+
+    // Reordenanza de las tareas. Al borrar una, las que quedan deben cubrir el hueco del 'order'
+    const remainingTasks = await TaskModel.getTasks(listId)
+    const reorderData = remainingTasks.map((element, index) => ({
+      id: element.id,
+      order: index
+    }))
+
+    // Si quedan tareas, aplicamos el reordenamiento
+    if (reorderData.length > 0) {
+      await TaskModel.reorderTasks(listId, reorderData)
+    }
+
+    return res.status(200).json({ message: 'Tarea eliminada' })
+  } catch (error) {
+    return res.status(500).json({ message: error.message})
   }
 }
 

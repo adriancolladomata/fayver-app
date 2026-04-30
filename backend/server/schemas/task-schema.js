@@ -57,10 +57,10 @@ export function validateTask (object) {
   return taskSchema.safeParse(object)
 }
 
-export function validatepartialTask (object) {
+export function validatePartialTask (object) {
   return taskSchema.partial().safeParse(object)
 }
 
-export function validateReordertTasks (object) {
+export function validateReorderTasks (object) {
   return reorderTasksSchema.safeParse(object)
 }

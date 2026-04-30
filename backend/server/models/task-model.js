@@ -77,6 +77,15 @@ export class TaskModel {
       connection.release()
     }
   }
+
+  // Función para eliminar (parcialmente, modificando el deleted_at) una tarea
+  static async deleteTask (taskId, listId) {
+    const [result] = await db.query ('UPDATE tasks SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND list_id = ?',
+      [taskId, listId]
+    )
+
+    return result
+  }
 }
 
 

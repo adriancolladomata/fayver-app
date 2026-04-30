@@ -119,18 +119,18 @@ export const modifyList = async (req, res) => {
       let allLists = await ListModel.getLists(boardId)
 
       // Obtención de la lista a mover mediante el metodo find
-      const listToMove = allLists.find(l => l.id === listId)
+      const listToMove = allLists.find(element => element.id === listId)
       // Si se encuentra la lista, ejecuta el condicional
       if (listToMove) {
         // allLists ahora no contiene la lista a mover gracias al filter
-        allLists = allLists.filter(l => l.id !== listId)
+        allLists = allLists.filter(element => element.id !== listId)
 
         // El splice maneja el desplazamiento de los demás automáticamente
         allLists.splice(newOrder, 0, listToMove)
 
         // Con un map hacemos un reorder de todas las listas
-        const reorderData = allLists.map((l, index) => ({
-          id: l.id,
+        const reorderData = allLists.map((element, index) => ({
+          id: element.id,
           order: index
         }))
 
@@ -140,7 +140,7 @@ export const modifyList = async (req, res) => {
       }
     }
 
-    // Logíca de actualizacaión del resto de campos sin order
+    // Logíca de actualización del resto de campos sin order
     // Instanciación de un booleano para saber si se han modificado los campos
     let hasModifiedFields = false
     // Object.keys() pregunta si hay algo dentro de es epaquete, es decir, si el usuario solo movio el ordern su longitud sera de 0
@@ -200,6 +200,7 @@ export const updateListsOrder = async (req, res) => {
     const board = await BoardModel.getBoard(boardId, ownerId)
     // Verificamos que el tablón existe
     Validation.noBoard(board)
+    Validation.isDeleted(board)
 
     // Ejecutamos la transacción masiva directamente
     // validation.data ya es el array limpio de objetos [{id, order}, ...]
@@ -234,7 +235,18 @@ export const softDeleteList = async (req, res) => {
     const result = await ListModel.deleteList(listId, boardId)
 
     if (result.affectedRows === 0) {
-      return res.json({ message: 'No ha sido posible eliminar la lista '})
+      return res.status(400).json({ message: 'No ha sido posible eliminar la lista '})
+    }
+
+    const remainingLists = await ListModel.getLists(boardId)
+    const reorderData = remainingLists.map((element, index) => ({
+      id: element.id,
+      order: index
+    }))
+
+    // Si quedan listas, aplicamos el reordenamiento
+    if (reorderData.length > 0) {
+      await ListModel.reorderLists(boardId, reorderData)
     }
 
     return res.status(200).json({ message: 'Lista eliminada' })
