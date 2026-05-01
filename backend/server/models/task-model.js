@@ -36,7 +36,7 @@ export class TaskModel {
 
   // Al igual que en las listas, usamos un objeto para desestructurar los campos.
   // Esto permite que desde el controller solo pases lo que quieres cambiar.
-  static async modifyTask (id, list_id, { name, content, order, color, label, status, isArchived }) {
+  static async modifyTask (id, list_id, { name, content, order, color, label, status, is_archived }) {
     const [result] = await db.query(`UPDATE tasks SET 
       name = COALESCE(?, name),
       content = COALESCE(?, content),
@@ -47,7 +47,7 @@ export class TaskModel {
       is_archived = COALESCE(?, is_archived)
       WHERE id = ? AND list_id = ? AND deleted_at IS NULL`,
     [
-      name ?? null, content ?? null, order ?? null, color ?? null, label ?? null, status ?? null, isArchived ?? null,
+      name ?? null, content ?? null, order ?? null, color ?? null, label ?? null, status ?? null, is_archived ?? null,
       id, list_id
     ])
 
@@ -61,6 +61,13 @@ export class TaskModel {
 
     try {
       await connection.beginTransaction()
+
+      // PASO DE SEGURIDAD: Movemos todas las tareas de esta lista a números negativos
+      // Esto libera los números 0, 1, 2, 3... para que no haya choques
+      await connection.query(
+        'UPDATE tasks SET `order` = (`order` + 1) * -1 WHERE list_id = ?',
+        [list_id]
+      )
 
       for (const task of tasks) {
         await connection.query(

@@ -53,7 +53,7 @@ Content-Type: application/json
 }
 
 ### Test de la obtención de las listas de un tablon
-GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/
 
 ### Test de la obtención de una única lista
 GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447
@@ -76,11 +76,11 @@ Content-Type: application/json
 [
   {
     "id": "a29b785f-5ae6-4479-8028-47b461a06b62",
-    "order": 0
+    "order": 1
   },
   {
     "id": "078615dc-c633-49a2-a51c-36d9fe4e1da9",
-    "order": 1
+    "order": 0
   }
 ]
 
@@ -96,7 +96,39 @@ Content-Type: application/json
 }
 
 ### Test para la obtención de las tareas de una lista
-GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447/tasks
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks
 
 ### Test para la obtención de una única tarea de una lista
-GET http://localhost:3000/boards/b52b4f3f-e503-4974-ad12-0bbe5f2d36c9/lists/78bda3e4-c3aa-4d48-bfa7-6870a088b447/tasks/ffb78fb8-2779-499e-a250-61474ffad858
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b
+
+### Test de la modificación de una lista
+PATCH http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b
+Content-Type: application/json
+
+{
+  "name": "Tarea modificada",
+  "content": "Contenido personalizado",
+  "order": 1,
+  "label": "Etiqueta personalizada",
+  "is_archived": 1,
+  "color": "#324233",
+  "status": "En curso"
+}
+
+### Test de la reordenación de todas las tareas de una lista mediante Drag & Drop
+PATCH http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/action/reorder
+Content-Type: application/json
+
+[
+  {
+    "id": "976a92eb-2b3e-4fd9-97f0-aa75981ad32b",
+    "order": 1
+  },
+  {
+    "id": "af4598f4-4390-46b5-b798-eaebbacb15f5",
+    "order": 0
+  }
+]
+
+### Test de la eliminacion parcial de una tarea en especifico
+DELETE http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b

@@ -174,7 +174,7 @@ export const modifyTask = async (req, res) => {
 }
 
 // Función para reordenar todas las listas directamente (Drag & Drop relacionado en el Front-end)
-export const updateTaskOrder = async (req, res) => {
+export const updateTasksOrder = async (req, res) => {
   // Instanciación
   const { boardId, listId } = req.params
   const ownerId = req.user.id
