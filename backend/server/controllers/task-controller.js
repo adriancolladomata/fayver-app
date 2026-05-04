@@ -279,7 +279,7 @@ class Validation {
     if (!list) throw new Error ('Lista no encontrada')
   }
 
-  static notaskId (taskId) {
+  static noTaskId (taskId) {
     if (!taskId) throw new Error ('Se requiere el ID de la tarea')
   }
 

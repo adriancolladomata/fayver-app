@@ -132,3 +132,14 @@ Content-Type: application/json
 
 ### Test de la eliminacion parcial de una tarea en especifico
 DELETE http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b
+
+### Test de la creación de un comentario de una tarea
+POST http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b/comments
+Content-Type: application/json
+
+{
+  "content": "Segundo comentario"
+}
+
+### Test de la obtención de una tarea
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b/comments/6147f215-9d31-489d-bb3f-0e31122c4818
