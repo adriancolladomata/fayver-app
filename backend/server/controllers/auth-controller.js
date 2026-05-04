@@ -94,6 +94,23 @@ export const login = async (req, res) => {
   }
 }
 
+export const getMe = async (req, res) => {
+  const userId = req.user.id
+
+  try {
+    const user = await UserModel.getUserById(userId)
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' })
+    }
+
+    return res.json(user)
+  } catch (error) {
+    return res.status(500).json({ message: error.message})
+  }
+}
+
+
 export const logout = async (req, res) => {
   const options = {
     httpOnly: true, // La cookie solo es accesible en el servidor

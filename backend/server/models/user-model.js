@@ -19,4 +19,12 @@ export class UserModel {
     return id
   }
 
+  static async getUserById (id) {
+    const [rows] = await db.query('SELECT id, name, email FROM users WHERE id = ?',
+      [id]
+    )
+
+    return rows[0]
+  }
+
 }

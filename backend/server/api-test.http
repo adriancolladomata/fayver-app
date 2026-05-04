@@ -18,12 +18,14 @@ Content-Type: application/json
   "password": "Adrian112313_"
 }
 
+GET http://localhost:3000/auth/me
+
 ### Test de la creación de un tablón 
 POST http://localhost:3000/boards
 Content-Type: application/json
 
 {
-  "name": "Tablon crado con validacion Zod"
+  "name": "Tablon creado con validacion Zod"
 }
 
 ### Test de la obtención de los tablones 
@@ -138,8 +140,22 @@ POST http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078
 Content-Type: application/json
 
 {
-  "content": "Segundo comentario"
+  "content": "Object corregido"
 }
 
 ### Test de la obtención de una tarea
 GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b/comments/6147f215-9d31-489d-bb3f-0e31122c4818
+
+### Test de la obtención de todos los comentarios de una tarea
+GET http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b/comments
+
+### Test de la modificación de un comentario
+PATCH http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b/comments/6147f215-9d31-489d-bb3f-0e31122c4818
+Content-Type: application/json
+
+{
+  "content": "Contenido actualizado y modificado."
+}
+
+### Test de la eliminación de un comentario 
+DELETE http://localhost:3000/boards/8c6f7ca4-dc46-41f6-8b72-aace09b8dc67/lists/078615dc-c633-49a2-a51c-36d9fe4e1da9/tasks/976a92eb-2b3e-4fd9-97f0-aa75981ad32b/comments/7ec17644-69c5-4a78-b073-a64a42af72d7

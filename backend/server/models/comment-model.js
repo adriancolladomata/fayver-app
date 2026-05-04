@@ -8,7 +8,7 @@ export class CommentModal {
   }
 
   static async getComment (id, taskId) {
-    const [rows] = await db.query('SELECT * FROM task_comments WHERE id = ? AND task_id = ?',
+    const [rows] = await db.query('SELECT * FROM task_comments WHERE id = ? AND task_id = ? AND deleted_at IS NULL',
       [id, taskId]
     )
 
@@ -16,10 +16,26 @@ export class CommentModal {
   }
 
   static async getComments (taskId) {
-    const [rows] = await db.query('SELECT * FROM task_comments WHERE task_id = ?',
+    const [rows] = await db.query('SELECT * FROM task_comments WHERE task_id = ? AND deleted_at IS NULL',
       [taskId]
     )
 
     return rows
+  }
+
+  static async updateComment (id, taskId, content) {
+    // Usamos COALESCE para que, en caso de que no se cambie, no de ningun error.
+    const [result] = await db.query('UPDATE task_comments SET content = COALESCE(?, content) WHERE id = ? AND task_id = ? AND deleted_at IS NULL',
+      [content, id, taskId]
+    )
+
+    return result
+  }
+
+  static async deleteComment (id, taskId) {
+    const [result] = await db.query('UPDATE task_comments SET deleted_at = CURRENT_TIMESTAMP where id = ? AND task_id = ? AND deleted_at IS NULL',
+      [id, taskId])
+
+    return result
   }
 }
