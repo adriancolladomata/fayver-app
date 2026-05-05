@@ -5,6 +5,7 @@ import boardRoutes from './routes/board-routes.js'
 import listRoutes from './routes/list-routes.js'
 import taskRoutes from './routes/task-routes.js'
 import commentRoutes from './routes/comment-routes.js'
+import cors from 'cors'
 
 const app = express()
 
@@ -13,6 +14,10 @@ app.disable('x-powered-by')
 // Middlewares
 app.use(express.json())
 app.use(cookieParser())
+app.use(cors({
+  origin: 'http://localhost:5173', // URL de Vite (Frontend)
+  credentials: true // Obligatorio para permitir el envío de Cookies
+}))
 
 // Rutas
 app.use('/auth', authRoutes)

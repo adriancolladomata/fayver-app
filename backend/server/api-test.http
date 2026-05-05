@@ -18,6 +18,7 @@ Content-Type: application/json
   "password": "Adrian112313_"
 }
 
+### Test de la obtencion del usuario activo
 GET http://localhost:3000/auth/me
 
 ### Test de la creación de un tablón 
