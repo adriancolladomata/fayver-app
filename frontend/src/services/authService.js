@@ -13,6 +13,11 @@ export const getMeReq = async () => {
   return response.data // Devuelve los datos del usuario si la cookie es válida
 }
 
+export const registerReq = async (name, email, password, confirmPassword) => {
+  const response = await api.post('/auth/register', { name, email, password, confirmPassword })
+  return response.data
+}
+
 export const logoutReq = async () => {
   const response = await api.post('/auth/logout')
   return response.data

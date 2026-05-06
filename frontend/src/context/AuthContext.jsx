@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react'
-import { getMeReq, loginReq } from '../services/authService.js'
+import { getMeReq, loginReq, registerReq } from '../services/authService.js'
 
 // createContext() te permite crear un contexto que los componentes pueden proporcionar o leer.
 // Puedes llamar a createContext() fuera de cualquier componente para crear un contexto.
@@ -35,9 +35,15 @@ export const AuthProvider = ({ children }) => {
     setUser(res.data)
   }
 
-  // Introducimos los datos en el contexto. Compartimos el objeto user, la funcion login, y el estado login
+  // Llama a registerReq, y si el backend responde con exito, muestra un mensaje de éxito
+  const register = async (name, email, password, confirmPassword) => {
+    const res = await registerReq(name, email, password, confirmPassword)
+    return res
+  }
+
+  // Introducimos los datos en el contexto. Compartimos el objeto user, la funcion login, la función register y el estado loading
   return (
-    <AuthContext.Provider value={{ user, login, loading }}>
+    <AuthContext.Provider value={{ user, login, register, loading }}>
       {children}
     </AuthContext.Provider>
   )

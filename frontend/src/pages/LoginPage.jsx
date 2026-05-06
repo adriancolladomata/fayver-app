@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 
-export const LoginPage = () => {
+export const LoginPage = ({ onToggleAuth }) => {
   // Guardamos lo que el usaurio escribe en los inputs en tiempo real
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -29,6 +29,9 @@ export const LoginPage = () => {
         <input type='password' placeholder='Contraseña' onChange={e => setPassword(e.target.value)} />
         <button type='submit'>Entrar</button>
       </form>
+      <p>
+        ¿No tienes cuenta? <a href='#' onClick={onToggleAuth}>Regístrate aquí</a>
+      </p>
     </div>
   )
 }
