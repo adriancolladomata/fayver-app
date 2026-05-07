@@ -18,8 +18,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const res = await getMeReq
-        setUser(res.data)
+        const res = await getMeReq()
+        setUser(res)
       } catch (error) {
         setUser(null) // Si falla, no hay usuario logueado
       } finally {
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   // Llama a loginReq, y si el backend responde con exito, enviamos la información al usaurio y actualizamos su estado
   const login = async (email, password) => {
     const res = await loginReq(email, password)
-    setUser(res.data)
+    setUser(res)
   }
 
   // Llama a registerReq, y si el backend responde con exito, muestra un mensaje de éxito
@@ -41,9 +41,19 @@ export const AuthProvider = ({ children }) => {
     return res
   }
 
-  // Introducimos los datos en el contexto. Compartimos el objeto user, la funcion login, la función register y el estado loading
+  // Función para cerrar sesión del usuario
+  const logout = async () => {
+    try {
+      // Aquí llamarías a logoutReq() si lo necesitas
+      setUser(null)
+    } catch (error) {
+      console.error('Error al cerrar sesión: ', error)
+    }
+  }
+
+  // Introducimos los datos en el contexto. Compartimos el objeto user, la funcion login, la función register, logout y el estado loading
   return (
-    <AuthContext.Provider value={{ user, login, register, loading }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   )
