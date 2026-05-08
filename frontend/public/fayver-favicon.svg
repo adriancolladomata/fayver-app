@@ -1,0 +1,21 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo blanco redondeado estilo App Icon -->
+  <rect width="100" height="100" rx="20" fill="white"/>
+
+  <!-- Gradiente para la columna principal -->
+  <defs>
+    <linearGradient id="kanban_fav_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E40AF" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Estructura Kanban (F Abstracta) -->
+  <!-- Eje vertical -->
+  <rect x="22" y="22" width="12" height="56" rx="6" fill="url(#kanban_fav_grad)" />
+
+  <!-- Tarjetas/Barras -->
+  <rect x="38" y="22" width="40" height="14" rx="7" fill="#2563EB" /> <!-- Superior -->
+  <rect x="38" y="43" width="28" height="14" rx="7" fill="#60A5FA" /> <!-- Media -->
+  <rect x="38" y="64" width="18" height="14" rx="7" fill="#93C5FD" /> <!-- Inferior -->
+</svg>

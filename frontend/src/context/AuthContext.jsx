@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useContext } from 'react'
-import { getMeReq, loginReq, registerReq } from '../services/authService.js'
+import { getMeReq, loginReq, registerReq, logoutReq } from '../services/authService.js'
 
 // createContext() te permite crear un contexto que los componentes pueden proporcionar o leer.
 // Puedes llamar a createContext() fuera de cualquier componente para crear un contexto.
@@ -44,10 +44,13 @@ export const AuthProvider = ({ children }) => {
   // Función para cerrar sesión del usuario
   const logout = async () => {
     try {
-      // Aquí llamarías a logoutReq() si lo necesitas
+      // Llamar al backend para que borre la cookie (access_token)
+      await logoutReq()
       setUser(null)
     } catch (error) {
       console.error('Error al cerrar sesión: ', error)
+      // Aunque falle la petición al backend, limpiamos el estado del frontend
+      setUser(null)
     }
   }
 

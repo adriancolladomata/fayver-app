@@ -24,7 +24,14 @@ export const create = async (req, res) => {
     // Creación del tablón
     await BoardModel.createBoard(id, name, owner_id, share_token)
 
-    return res.status(201).json({ message: 'Tablón creado con éxito' })
+    // Devolvemos el tablón creado para que el frontend lo muestre inmediatamente
+    return res.status(201).json({
+      id,
+      name,
+      owner_id,
+      share_token,
+      created_at: new Date().toISOString()
+    })
   } catch (error) {
     return res.status(500).json({ message: 'No se ha podido crea el tablón' })
   }

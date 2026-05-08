@@ -5,6 +5,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { DashboardPage } from './pages/DashboardPage'
 import { Sidebar } from './components/Sidebar'
 import { NavBar } from './components/NavBar'
+import { BoardProvider } from './context/BoardContext'
 
 // Definición del componente principal App de la aplicación.
 function App () {
@@ -18,27 +19,29 @@ function App () {
     <BrowserRouter>
       {/* Si el usuario está logueado, muestra el Sidebar + NavBar + contenido */}
       {user ? (
-        // Usamos h-screen y overflow-hidden para que el layout ocupe el 100% de la ventana sin romper
-        <div className='flex h-screen bg-gray-50 overflow-hidden'>
-          <Sidebar />
+        <BoardProvider>
+          <div className='flex h-screen bg-gray-50 overflow-hidden'>
+            <Sidebar />
 
-          {/* Contenedor derecho: flex-col para poner la NavBar arriba y el contenido abajo */}
-          <div className='flex-1 flex flex-col'>
-            {/* Renderizamos la barra de navegación aquí, arriba de las rutas */}
-            <NavBar />
+            {/* Contenedor derecho: flex-col para poner la NavBar arriba y el contenido abajo */}
+            <div className='flex-1 flex flex-col'>
+              {/* Renderizamos la barra de navegación aquí, arriba de las rutas */}
+              <NavBar />
 
-            {/* Contenedor principal de las páginas con scroll independiente */}
-            <main className='flex-1 overflow-y-auto p-6'>
-              <Routes>
-                <Route path='/dashboard' element={<DashboardPage />}></Route>
-                <Route path='/board/:boardId' element={<h1>Contenido del tablon (Proximamente...)</h1>}></Route>
-                {/* Si el usuario intenta ir a /login estando logueado, lo mandamos al dashboard */}
-                <Route path='/login' element={<Navigate to='/dashboard' replace />} />
-                <Route path='*' element={<Navigate to='/dashboard' replace />} />
-              </Routes>
-            </main>
+              {/* Contenedor principal de las páginas con scroll independiente */}
+              <main className='flex-1 overflow-y-auto p-6'>
+                <Routes>
+                  <Route path='/dashboard' element={<DashboardPage />}></Route>
+                  <Route path='/board/:boardId' element={<h1>Contenido del tablon (Proximamente...)</h1>}></Route>
+                  {/* Si el usuario intenta ir a /login estando logueado, lo mandamos al dashboard */}
+                  <Route path='/login' element={<Navigate to='/dashboard' replace />} />
+                  <Route path='*' element={<Navigate to='/dashboard' replace />} />
+                </Routes>
+              </main>
+            </div>
           </div>
-        </div>
+        </BoardProvider>
+
       ) : (
         /* Si no está logueado, muestra solo las rutas públicas */
         <div className='min-h-screen bg-gray-50'>

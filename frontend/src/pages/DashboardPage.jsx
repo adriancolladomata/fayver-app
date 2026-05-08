@@ -2,25 +2,10 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getBoardsReq } from '../services/boardService.js'
 import { BoardCard } from '../components/BoardCard.jsx'
+import { useBoards } from '../context/BoardContext.jsx'
 
 export const DashboardPage = () => {
-  const [boards, setBoards] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const loadBoards = async () => {
-      try {
-        const res = await getBoardsReq()
-        setBoards(res)
-      } catch (error) {
-        console.error('Error al cargar los tablones: ', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    loadBoards()
-  }, [])
+  const { boards, loading } = useBoards()
 
   if (loading) return <p className='p-10 text-center'>Cargando tus proyectos....</p>
 

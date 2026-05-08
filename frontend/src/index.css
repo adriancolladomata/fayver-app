@@ -1,1 +1,13 @@
 @import "tailwindcss";
+
+/* Estilos base minimalistas con paleta pastel profesional */
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Transiciones suaves */
+* {
+  @apply transition-colors duration-200;
+}
