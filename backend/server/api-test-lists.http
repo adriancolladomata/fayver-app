@@ -1,0 +1,38 @@
+### ===== LISTAS =====
+
+### Obtener todas las listas de un tablón
+GET http://localhost:3000/boards/{{boardId}}/lists
+Authorization: Bearer {{token}}
+
+### Crear una nueva lista
+POST http://localhost:3000/boards/{{boardId}}/lists
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Por Hacer",
+  "color": "#ff6b6b"
+}
+
+### ===== TAREAS =====
+
+### Obtener todas las tareas de una lista
+GET http://localhost:3000/boards/{{boardId}}/lists/{{listId}}/tasks
+Authorization: Bearer {{token}}
+
+### Crear una nueva tarea
+POST http://localhost:3000/boards/{{boardId}}/lists/{{listId}}/tasks
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Mi Primera Tarea"
+}
+
+### Eliminar una tarea
+DELETE http://localhost:3000/boards/{{boardId}}/lists/{{listId}}/tasks/{{taskId}}
+Authorization: Bearer {{token}}
+
+### Eliminar una lista
+DELETE http://localhost:3000/boards/{{boardId}}/lists/{{listId}}
+Authorization: Bearer {{token}}

@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { BoardPage } from './pages/BoardPage'
 import { Sidebar } from './components/Sidebar'
 import { NavBar } from './components/NavBar'
 import { BoardProvider } from './context/BoardContext'
@@ -32,7 +33,7 @@ function App () {
               <main className='flex-1 overflow-y-auto p-6'>
                 <Routes>
                   <Route path='/dashboard' element={<DashboardPage />}></Route>
-                  <Route path='/board/:boardId' element={<h1>Contenido del tablon (Proximamente...)</h1>}></Route>
+                  <Route path='/board/:boardId' element={<BoardPage />}></Route>
                   {/* Si el usuario intenta ir a /login estando logueado, lo mandamos al dashboard */}
                   <Route path='/login' element={<Navigate to='/dashboard' replace />} />
                   <Route path='*' element={<Navigate to='/dashboard' replace />} />

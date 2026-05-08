@@ -22,7 +22,7 @@ export const createTask = async (req, res) => {
     Validation.noListId(listId)
     const list = await ListModel.getList(listId, boardId)
     Validation.noList(list)
-    Validation.isDeleted
+    Validation.isDeleted(list)
 
     const taskId = randomUUID()
     const { name } = validation.data
