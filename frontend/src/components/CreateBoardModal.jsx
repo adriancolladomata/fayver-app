@@ -7,21 +7,29 @@ export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
   const [loading, setLoading] = useState(false)
   const { createBoard } = useBoards() // Extraemos la función
 
-  // Si isOpen es false, el componente no renderiza NADA
+  // Si isOpen es false, el componente no renderiza nada (el modal no se muestra)
   if (!isOpen) return null
 
+  // Función para manejar el envío del formulario
   const handleSubmit = async (e) => {
+    // Evitamos que el formulaario recarguela página al hacer submit
     e.preventDefault()
+    // Si el nombre está vacío, mostramos una alerta y no hacemos nada más
     if (!name.trim()) return alert('El nombre es obligatorio')
 
+    // Indicamos que estamos en proceso de creación para deshabilitar el botón
     setLoading(true)
+
     try {
-      // Usamos la función del contexto
+      // Usamos la función del BoardContext para crear el nuevo tablero, la cual se encargará de hacer la petición al backend
+      // y atualizar el estado global de los tableros
       await createBoard(name)
       // Limpiamos y cerramos
       setName('')
+      // Cerramos el modal
       onClose()
     } catch (error) {
+      // En caso de error, lo mostramos en consola y alertamos al usuario
       console.error('Error al crear:', error)
       alert('No se pudo crear el tablón')
     } finally {
@@ -34,8 +42,8 @@ export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
       {/* Contenedor del Modal */}
       <div className='bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200'>
 
-        {/* Cabecera Azul (Estilo Fayver) */}
-        <div className='bg-blue-600 p-4 text-white'>
+        {/* Cabecera Azul */}
+        <div className='bg-gradient-to-r from-blue-700 to-blue-500 p-4 text-white'>
           <h2 className='text-xl font-bold'>Crear nuevo tablón</h2>
           <p className='text-blue-100 text-sm'>Dale un nombre a tu próximo proyecto</p>
         </div>
@@ -59,14 +67,14 @@ export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
             <button
               type='button'
               onClick={onClose}
-              className='px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors'
+              className='px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors'
             >
               Cancelar
             </button>
             <button
               type='submit'
               disabled={loading}
-              className='px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50'
+              className='px-6 py-2 bg-gradient-to-r from-blue-700 to-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 cursor-pointer transition-colors disabled:opacity-50'
             >
               {loading ? 'Creando...' : 'Crear Tablón'}
             </button>

@@ -5,6 +5,7 @@ export const CreateListModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [color, setColor] = useState('#ffffff')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const { createList } = useLists()
 
   const colors = [
@@ -19,20 +20,39 @@ export const CreateListModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim()) {
+      setError('El nombre de la lista es requerido')
+      return
+    }
 
     try {
       setLoading(true)
+      setError('')
       await createList(name.trim(), color)
       setName('')
       setColor('#ffffff')
+      setError('')
       onClose()
-    } catch (error) {
-      console.error('Error:', error)
-      alert('Error al crear la lista')
+    } catch (err) {
+      console.error('Error completo:', err)
+      const errorMsg = typeof err === 'string' 
+        ? err 
+        : err?.message 
+        ? err.message 
+        : err?.error?.message
+        ? err.error.message
+        : 'No se pudo crear la lista. Intenta de nuevo.'
+      setError(errorMsg)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleClose = () => {
+    setName('')
+    setColor('#ffffff')
+    setError('')
+    onClose()
   }
 
   if (!isOpen) return null
@@ -41,6 +61,11 @@ export const CreateListModal = ({ isOpen, onClose }) => {
     <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
       <div className='bg-white rounded-lg p-6 w-96 shadow-xl'>
         <h2 className='text-xl font-bold text-gray-800 mb-4'>Nueva Lista</h2>
+        {error && (
+          <div className='mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm'>
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <input
             type='text'
@@ -60,7 +85,7 @@ export const CreateListModal = ({ isOpen, onClose }) => {
                 type='button'
                 onClick={() => setColor(c)}
                 className={`w-8 h-8 rounded-full border-2 transition-all ${
-                  color === c ? 'border-gray-800 scale-110' : 'border-gray-300'
+                  color === c ? 'border-gray-800 scale-110' : 'border-gray-300 hover:border-gray-400'
                 }`}
                 style={{ backgroundColor: c }}
                 disabled={loading}
@@ -71,8 +96,8 @@ export const CreateListModal = ({ isOpen, onClose }) => {
           <div className='flex gap-2 justify-end'>
             <button
               type='button'
-              onClick={onClose}
-              className='px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors'
+              onClick={handleClose}
+              className='px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors disabled:opacity-50'
               disabled={loading}
             >
               Cancelar

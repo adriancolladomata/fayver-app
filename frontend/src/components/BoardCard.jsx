@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 
+// Card del tablón, el cual se muestra en el DashboardPage
 export const BoardCard = ({ board }) => {
+  // Instancia de useNavigate para redirigir al hacer click en la card
   const navigate = useNavigate()
 
   return (

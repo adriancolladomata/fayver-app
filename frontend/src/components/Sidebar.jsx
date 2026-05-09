@@ -91,8 +91,8 @@ export const Sidebar = () => {
       </div>
 
       {/* Footer */}
-      <div className='p-4 border-t border-gray-800'>
-        <button onClick={handleLogout} className='w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer'>
+      <div className='p-4 border-t flex justify-center border-gray-800'>
+        <button onClick={handleLogout} className='hover:bg-neutral-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer'>
           Cerrar Sesión
         </button>
       </div>

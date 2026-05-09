@@ -41,10 +41,13 @@ export const ListProvider = ({ children, boardId }) => {
 
   const createList = useCallback(async (name, color = '#ffffff') => {
     try {
-      await createListReq(boardId, { name, color })
+      const response = await createListReq(boardId, { name, color })
+      console.log('Respuesta del servidor:', response)
+      // Recargar todas las listas para obtener la nueva
       await loadLists()
+      return response
     } catch (err) {
-      console.error('Error al crear lista:', err)
+      console.error('Error completo al crear lista:', err)
       throw err
     }
   }, [boardId, loadLists])
