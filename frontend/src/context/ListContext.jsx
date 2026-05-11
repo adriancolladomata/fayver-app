@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react'
-import { getListsReq, createListReq, deleteListReq } from '../services/listService'
+import { getListsReq, createListReq, deleteListReq, updateListReq, reorderListsReq } from '../services/listService'
 import { getTasksReq, createTaskReq, deleteTaskReq } from '../services/taskService'
 
 // Creacion del contexto para las listas
@@ -114,6 +114,36 @@ export const ListProvider = ({ children, boardId }) => {
     // El array de dependencias incluye boardId para que, si el usuario cambia de tablero, se pueda eliminar una lista del nuevo tablero.
   }, [boardId])
 
+  // Función para actualizar una lista (nombre, color, etc).
+  const updateList = useCallback(async (boardId, listId, data) => {
+    try {
+      // Llamamos a updateListReq de listService para actualizar la lista
+      const response = await updateListReq(boardId, listId, data)
+      // Actualizamos el estado local para reflejar los cambios
+      setLists(prevLists => prevLists.map(list =>
+        list.id === listId ? { ...list, ...data } : list
+      ))
+      return response
+    } catch (err) {
+      console.error('Error al actualizar lista:', err)
+      throw err
+    }
+  }, [])
+
+  // Función para reordenar las listas del tablero.
+  const reorderLists = useCallback(async (boardId, reorderData) => {
+    try {
+      // Llamamos a reorderListsReq de listService para reordenar las listas
+      const response = await reorderListsReq(boardId, reorderData)
+      // Recargamos todas las listas para asegurar que tenemos el orden correcto
+      await loadLists()
+      return response
+    } catch (err) {
+      console.error('Error al reordenar listas:', err)
+      throw err
+    }
+  }, [loadLists])
+
   // Función para eliminar una tarea de una lista.
   const deleteTask = useCallback(async (listId, taskId) => {
     try {
@@ -135,7 +165,7 @@ export const ListProvider = ({ children, boardId }) => {
   // Creamos el objeto value que incluye los datos y funciones que queremos compartir en el contexto.
   // En este caso, compartimos la lista de listas, el estado de carga, la función para cargar las listas,
   // la función para crear una nueva lista, la función para crear una nueva tarea, la función para eliminar una lista,
-  // y la función para eliminar una tarea
+  // la función para eliminar una tarea, la función para actualizar una lista y la función para reordenar las listas.
   const value = {
     lists,
     loading,
@@ -143,7 +173,9 @@ export const ListProvider = ({ children, boardId }) => {
     createList,
     createTask,
     deleteList,
-    deleteTask
+    deleteTask,
+    updateList,
+    reorderLists
   }
 
   return <ListContext.Provider value={value}>{children}</ListContext.Provider>

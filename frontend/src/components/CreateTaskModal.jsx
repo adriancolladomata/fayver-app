@@ -4,56 +4,85 @@ import { useLists } from '../context/ListContext'
 export const CreateTaskModal = ({ listId, isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const { createTask } = useLists()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!name.trim()) return
+    if (!name.trim()) {
+      setError('El nombre de la tarea es requerido')
+      return
+    }
 
     try {
       setLoading(true)
+      setError('')
       await createTask(listId, name.trim())
       setName('')
+      setError('')
       onClose()
     } catch (error) {
       console.error('Error:', error)
-      alert('Error al crear la tarea')
+      setError('Error al crear la tarea')
     } finally {
       setLoading(false)
     }
   }
 
+  const handleClose = () => {
+    setName('')
+    setError('')
+    onClose()
+  }
+
   if (!isOpen) return null
 
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-      <div className='bg-white rounded-lg p-6 w-96 shadow-xl'>
-        <h2 className='text-xl font-bold text-gray-800 mb-4'>Nueva Tarea</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type='text'
-            placeholder='Nombre de la tarea'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className='w-full bg-gray-50 text-gray-800 px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:outline-none mb-4'
-            autoFocus
-            disabled={loading}
-          />
-          <div className='flex gap-2 justify-end'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
+      <div className='bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200'>
+        {/* Cabecera Azul */}
+        <div className='bg-gradient-to-r from-blue-700 to-blue-500 p-4 text-white'>
+          <h2 className='text-xl font-bold'>Nueva Tarea</h2>
+          <p className='text-blue-100 text-sm'>Añade una nueva tarea a esta lista</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className='p-6'>
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Nombre de la tarea
+            </label>
+            <input
+              autoFocus
+              type='text'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder='Ej: Diseñar interfaz'
+              className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-800'
+              disabled={loading}
+            />
+          </div>
+
+          {error && (
+            <div className='mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium'>
+              {error}
+            </div>
+          )}
+
+          <div className='flex justify-end gap-3 mt-6'>
             <button
               type='button'
-              onClick={onClose}
-              className='px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors'
+              onClick={handleClose}
+              className='px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors'
               disabled={loading}
             >
               Cancelar
             </button>
             <button
               type='submit'
-              className='px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50'
               disabled={loading || !name.trim()}
+              className='px-6 py-2 bg-gradient-to-r from-blue-700 to-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 cursor-pointer transition-colors disabled:opacity-50'
             >
-              {loading ? 'Creando...' : 'Crear'}
+              {loading ? 'Creando...' : 'Crear Tarea'}
             </button>
           </div>
         </form>

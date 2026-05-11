@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { CreateTaskModal } from './CreateTaskModal'
+import { ListSettingsModal } from './ListSettingsModal'
 import { useLists } from '../context/ListContext'
 
 export const ListColumn = ({ list, boardId }) => {
-  const [showModal, setShowModal] = useState(false)
-  const { deleteTask } = useLists()
+  const [showTaskModal, setShowTaskModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const { deleteTask, lists } = useLists()
 
   const handleDeleteTask = async (taskId) => {
     if (confirm('¿Eliminar esta tarea?')) {
@@ -29,7 +31,13 @@ export const ListColumn = ({ list, boardId }) => {
             )}
             {list.name}
           </h3>
-          <img src='../SVGDotsVertical.svg' alt='Icono tres puntos' className='w-5 h-5' />
+          <button
+            onClick={() => setShowSettingsModal(true)}
+            className='w-5 h-5 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer flex items-center justify-center'
+            title='Configurar lista'
+          >
+            <img src='../SVGDotsVertical.svg' alt='Icono tres puntos' className='w-5 h-5' />
+          </button>
         </div>
 
         <div className='space-y-2 mb-4 max-h-96 overflow-y-auto'>
@@ -57,7 +65,7 @@ export const ListColumn = ({ list, boardId }) => {
         </div>
 
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => setShowTaskModal(true)}
           className='w-full py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium'
         >
           + Nueva tarea
@@ -66,8 +74,16 @@ export const ListColumn = ({ list, boardId }) => {
 
       <CreateTaskModal
         listId={list.id}
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+      />
+
+      <ListSettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        list={list}
+        boardId={boardId}
+        allLists={lists}
       />
     </>
   )

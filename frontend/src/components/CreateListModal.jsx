@@ -58,56 +58,69 @@ export const CreateListModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-      <div className='bg-white rounded-lg p-6 w-96 shadow-xl'>
-        <h2 className='text-xl font-bold text-gray-800 mb-4'>Nueva Lista</h2>
-        {error && (
-          <div className='mb-4 p-3 bg-red-50 border border-red-300 text-red-700 rounded text-sm'>
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleSubmit}>
-          <input
-            type='text'
-            placeholder='Nombre de la lista'
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className='w-full bg-gray-50 text-gray-800 px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 focus:outline-none mb-4'
-            autoFocus
-            disabled={loading}
-          />
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
+      <div className='bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200'>
+        {/* Cabecera Azul */}
+        <div className='bg-gradient-to-r from-blue-700 to-blue-500 p-4 text-white'>
+          <h2 className='text-xl font-bold'>Nueva Lista</h2>
+          <p className='text-blue-100 text-sm'>Dale un nombre a tu próxima lista</p>
+        </div>
 
-          <label className='block text-sm text-gray-600 mb-2'>Color (opcional)</label>
-          <div className='flex gap-2 mb-4 flex-wrap'>
-            {colors.map(c => (
-              <button
-                key={c}
-                type='button'
-                onClick={() => setColor(c)}
-                className={`w-8 h-8 rounded-full border-2 transition-all ${
-                  color === c ? 'border-gray-800 scale-110' : 'border-gray-300 hover:border-gray-400'
-                }`}
-                style={{ backgroundColor: c }}
-                disabled={loading}
-              />
-            ))}
+        <form onSubmit={handleSubmit} className='p-6'>
+          <div className='mb-4'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>
+              Nombre de la lista
+            </label>
+            <input
+              autoFocus
+              type='text'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder='Ej: Por Hacer'
+              className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-800'
+              disabled={loading}
+            />
           </div>
 
-          <div className='flex gap-2 justify-end'>
+          <div className='mb-6'>
+            <label className='block text-gray-700 text-sm font-bold mb-2'>Color (opcional)</label>
+            <div className='flex gap-3 flex-wrap'>
+              {colors.map(c => (
+                <button
+                  key={c}
+                  type='button'
+                  onClick={() => setColor(c)}
+                  className={`w-8 h-8 rounded-full border-2 transition-all ${
+                    color === c ? 'border-gray-800 scale-110' : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  style={{ backgroundColor: c }}
+                  disabled={loading}
+                />
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div className='mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm font-medium'>
+              {error}
+            </div>
+          )}
+
+          <div className='flex justify-end gap-3 mt-6'>
             <button
               type='button'
               onClick={handleClose}
-              className='px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors disabled:opacity-50'
+              className='px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors'
               disabled={loading}
             >
               Cancelar
             </button>
             <button
               type='submit'
-              className='px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50'
               disabled={loading || !name.trim()}
+              className='px-6 py-2 bg-gradient-to-r from-blue-700 to-blue-500 text-white font-bold rounded-lg hover:bg-blue-700 cursor-pointer transition-colors disabled:opacity-50'
             >
-              {loading ? 'Creando...' : 'Crear'}
+              {loading ? 'Creando...' : 'Crear Lista'}
             </button>
           </div>
         </form>
