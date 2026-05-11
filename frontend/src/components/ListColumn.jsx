@@ -18,7 +18,7 @@ export const ListColumn = ({ list, boardId }) => {
 
   return (
     <>
-      <div className='bg-white rounded-lg shadow p-4 w-80 flex-shrink-0'>
+      <div className='bg-white rounded-lg shado p-4 w-80 flex-shrink-0'>
         <div className='flex justify-between items-center mb-4'>
           <h3 className='font-bold text-gray-800 text-lg flex items-center gap-2'>
             {list.color && list.color !== '#ffffff' && (
@@ -29,6 +29,7 @@ export const ListColumn = ({ list, boardId }) => {
             )}
             {list.name}
           </h3>
+          <img src='../SVGDotsVertical.svg' alt='Icono tres puntos' className='w-5 h-5' />
         </div>
 
         <div className='space-y-2 mb-4 max-h-96 overflow-y-auto'>

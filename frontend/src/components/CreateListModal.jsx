@@ -35,13 +35,13 @@ export const CreateListModal = ({ isOpen, onClose }) => {
       onClose()
     } catch (err) {
       console.error('Error completo:', err)
-      const errorMsg = typeof err === 'string' 
-        ? err 
-        : err?.message 
-        ? err.message 
-        : err?.error?.message
-        ? err.error.message
-        : 'No se pudo crear la lista. Intenta de nuevo.'
+      const errorMsg = typeof err === 'string'
+        ? err
+        : err?.message
+          ? err.message
+          : err?.error?.message
+            ? err.error.message
+            : 'No se pudo crear la lista. Intenta de nuevo.'
       setError(errorMsg)
     } finally {
       setLoading(false)
@@ -76,7 +76,7 @@ export const CreateListModal = ({ isOpen, onClose }) => {
             autoFocus
             disabled={loading}
           />
-          
+
           <label className='block text-sm text-gray-600 mb-2'>Color (opcional)</label>
           <div className='flex gap-2 mb-4 flex-wrap'>
             {colors.map(c => (
