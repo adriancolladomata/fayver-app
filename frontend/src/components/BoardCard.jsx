@@ -11,14 +11,19 @@ export const BoardCard = ({ board }) => {
       className='bg-neutral-800 rounded-lg shadow-md hover:shadow-xl/20 transition-shadow cursor-pointer border-blue-500 overflow-hidden group'
     >
       {/* Div de fondo pegado arriba, izquierda y derecha */}
-      <div className='bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 h-24 w-full'></div>
+      <div className='bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 h-24 w-full flex justify-end'>
+        <button
+          className='w-5 h-5 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer flex items-center justify-center'
+          title='Configurar lista'
+        ></button>
+        <img src='../SVGDotsVertical.svg' alt='Icono tres puntos' className='w-5 h-5 mt-3 mr-3' />
+      </div>
 
       {/* Contenedor del texto con su propio padding */}
       <div className='p-4'>
         <h6 className='text-lg font-bold text-neutral-100 transition-colors'>
           {board.name}
         </h6>
-        {/* Podrías añadir aquí la descripción si quieres */}
       </div>
     </div>
   )

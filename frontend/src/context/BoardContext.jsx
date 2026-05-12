@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react'
-import { getBoardsReq, createBoardReq } from '../services/boardService'
+import { createContext, useContext, useState, useEffect, use, useCallback } from 'react'
+import { getBoardsReq, createBoardReq, deleteBoardReq } from '../services/boardService'
 
 // Instancia del contexto, el cual luego se usará para compartir datos en otros archivos.
 const BoardContext = createContext()
@@ -20,6 +20,7 @@ export const BoardProvider = ({ children }) => {
   // Instancia de boards y loading para guardar la lista de tableros y el estado de carga.
   const [boards, setBoards] = useState([])
   const [loading, setLoading] = useState(true)
+  const [currentBoard, setCurrentBoard] = useState(null)
 
   // Función para cargar los tableros desde el backend. Se llama al abrir la página para mostrar los tableros del usuario.
   const loadBoards = async () => {
@@ -45,7 +46,7 @@ export const BoardProvider = ({ children }) => {
   // Función para crear un nuevo tablero.
   const createBoard = async (name) => {
     try {
-      // Llmamos a la función del boardService que hace l petición al backend para crear un nuevo tablero, donde se le pasa el nombre del tablero.
+      // Llmamos a la función del boardService que hace la petición al backend para crear un nuevo tablero, donde se le pasa el nombre del tablero.
       const newBoard = await createBoardReq({ name })
       // Actualizamos el estado global: todos los que usen este contexto lo verán
       setBoards((prev) => [...prev, newBoard])
@@ -57,10 +58,27 @@ export const BoardProvider = ({ children }) => {
     }
   }
 
+  /* const updateBoard = useCallback(async (boardId, name) => {
+    try {
+
+    } catch (error) {
+      console.log('Error al actualizar el tablón: ', error)
+    }
+  }, []) */
+
+  const deleteBoard = async (boardId) => {
+    try {
+      const res = await deleteBoardReq()
+      setBoards(res)
+    } catch (error) {
+      console.error('Error al archivar el tablón: ', error)
+    }
+  }
+
   // Devolvemos el contexto con los datos y funciones que queremos compartir de la aplicación.
   // En este caso, compartimos la lista de tableros, el estado de carga, la funcion para crear un nuevo tablero y la función para cargr los tableros.
   return (
-    <BoardContext.Provider value={{ boards, loading, createBoard, loadBoards }}>
+    <BoardContext.Provider value={{ boards, loading, createBoard, loadBoards, deleteBoard, currentBoard, setCurrentBoard }}>
       {children}
     </BoardContext.Provider>
   )

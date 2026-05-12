@@ -29,14 +29,30 @@ export const createList = async (req, res) => {
 
     // Creamos un randomUUID para el id
     const listId = randomUUID()
+
     // Creamos y asignamos el orden como el resultado de la suma de la obtencion del orden de la ultima lista + 1
-    const order = await ListModel.getLastOrder(boardId) + 1
+    const lastOrder = await ListModel.getLastOrder(boardId)
+    // Si getLastOrder devuelve null (no hay listas), empezamos en 0.
+    const order = (lastOrder === null || lastOrder === undefined) ? 0 : lastOrder + 1
+
+    console.log('Creando lista:', { listId, name, boardId, order, color, lastOrder })
 
     // Creamos la lista
     await ListModel.createList(listId, name, boardId, order, color)
 
+    console.log('Lista creada exitosamente:', { listId, order })
     return res.status(201).json({ message: 'Lista creada' })
   } catch (error) {
+    console.error('Error en createList:', error)
+
+    // Verificar si es error de duplicate key
+    if (error.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({
+        message: 'Error: El orden de la lista ya existe. Por favor, recarga la página e intenta de nuevo.',
+        error: error.message
+      })
+    }
+
     return res.status(500).json({ message: error.message })
   }
 }
@@ -185,15 +201,17 @@ export const updateListsOrder = async (req, res) => {
   const { boardId } = req.params
   const ownerId = req.user.id
 
+  console.log('updateListsOrder - Datos recibidos:', { boardId, body: req.body })
+
   // Validamos que el body sea un array de: { id: string, order: number }
   const validation = validateReorder(req.body)
 
   if (!validation.success) {
+    console.error('Error de validación:', validation.error.flatten().fieldErrors)
     return res.status(400).json({ error: validation.error.flatten().fieldErrors })
   }
 
   try {
-
     // Verificamos que existe un ID del talon enviado
     Validation.noBoardId(boardId)
     // Instanciamos el tablon
@@ -202,15 +220,20 @@ export const updateListsOrder = async (req, res) => {
     Validation.noBoard(board)
     Validation.isDeleted(board)
 
+    console.log('Reordenando listas:', validation.data)
+
     // Ejecutamos la transacción masiva directamente
     // validation.data ya es el array limpio de objetos [{id, order}, ...]
     await ListModel.reorderLists(boardId, validation.data)
+
+    console.log('Orden del tablón actualizado correctamente')
 
     return res.status(200).json({
       message: 'Orden del tablón actualizado correctamente'
     })
 
   } catch (error) {
+    console.error('Error en updateListsOrder:', error)
     return res.status(500).json({
       message: 'Error al procesar el reordenamiento: ' + error.message
     })

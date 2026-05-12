@@ -25,18 +25,26 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
       return
     }
 
+    if (newName.trim() === list?.name) {
+      setMessage({ type: 'error', text: 'El nuevo nombre es igual al actual' })
+      return
+    }
+
     try {
       setLoading(true)
       setMessage({ type: '', text: '' })
+      console.log('Intentando actualizar nombre:', { boardId, listId: list.id, newName: newName.trim() })
       await updateList(boardId, list.id, { name: newName.trim() })
       setMessage({ type: 'success', text: 'Nombre actualizado correctamente' })
       setTimeout(() => {
         setCurrentTab('main')
+        setNewName(list?.name || '')
         setMessage({ type: '', text: '' })
       }, 1500)
     } catch (error) {
       console.error('Error al actualizar nombre:', error)
-      setMessage({ type: 'error', text: 'No se pudo actualizar el nombre de la lista' })
+      const errorMsg = error?.message || error?.error?.message || 'No se pudo actualizar el nombre de la lista'
+      setMessage({ type: 'error', text: errorMsg })
     } finally {
       setLoading(false)
     }

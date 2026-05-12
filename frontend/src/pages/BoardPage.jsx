@@ -3,12 +3,26 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { ListColumn } from '../components/ListColumn'
 import { CreateListModal } from '../components/CreateListModal'
 import { ListProvider, useLists } from '../context/ListContext'
+import { useBoards } from '../context/BoardContext'
 
 const BoardPageContent = () => {
   const { boardId } = useParams()
   const navigate = useNavigate()
   const [showListModal, setShowListModal] = useState(false)
   const { lists, loading, loadLists } = useLists()
+  const { boards, setCurrentBoard } = useBoards()
+
+  useEffect(() => {
+    // Buscamos el objeto del tablón actual dentro del array global de boards
+    const current = boards.find(b => b.id === boardId)
+    // Si hay tablon actual, se lo asignamos a currentBoard en BoardContext
+    if (current) {
+      setCurrentBoard(current)
+    }
+
+    // Si salimos del tablón, gracias a useEffect, asignamos que el tablón actual es null
+    return () => setCurrentBoard(null)
+  })
 
   useEffect(() => {
     loadLists()
@@ -33,7 +47,7 @@ const BoardPageContent = () => {
         </button>
       </div>
 
-      <div className='overflow-x-auto pb-4'>
+      <div className='overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-gray-300'>
         <div className='flex gap-6 min-w-min'>
           {lists.map(list => (
             <ListColumn key={list.id} list={list} boardId={boardId} />

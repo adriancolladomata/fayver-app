@@ -1,35 +1,39 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useBoards } from '../context/BoardContext'
 
 export const NavBar = () => {
   const { user } = useAuth()
+  const { currentBoard } = useBoards()
   const location = useLocation()
 
   // Extraemos las partes de la URL. Por ejemplo: "/board/123" -> ["board", "123"]
   const pathNames = location.pathname.split('/').filter((x) => x)
 
+  const isBoardRoute = pathNames[0] === 'board' && pathNames[1]
+
   return (
     <nav className='bg-white h-16 flex items-center justify-between px-8 border-b border-gray-200 shadow-sm w-full'>
 
-      {/* IZQUIERDA: Breadcrumbs (Migas de pan) */}
+      {/* IZQUIERDA: Breadcrumbs */}
       <div className='flex items-center text-sm'>
-        <span className='text-gray-500 font-medium'>Fayver</span>
+        {/* Siempre mostramos Fayver. Link para volver al inicio */}
+        <Link to="/" className='text-gray-500 font-medium hover:text-blue-600 transition-colors'>
+          Fayver
+        </Link>
 
-        {pathNames.map((value, index) => {
-          const isLast = index === pathNames.length - 1
+        {/* Lógica condicional para el tablón */}
+        {isBoardRoute && (
+          <div className='flex items-center'>
+            <span className='mx-2 text-gray-400'>/</span>
+            <span className='text-blue-600 font-semibold capitalize'>
+              {/* Si tenemos el nombre en el context lo mostramos, si no, un loading o el ID acortado */}
+              {currentBoard ? currentBoard.name : 'Cargando tablón...'}
+            </span>
+          </div>
+        )}
 
-          return (
-            <div key={value} className='flex items-center'>
-              <span className='mx-2 text-gray-400'>/</span>
-              <span
-                className={`capitalize ${isLast ? 'text-blue-600 font-semibold' : 'text-gray-500'}`}
-              >
-                {/* Si la ruta es muy larga (ej. un ID de mongo), la acortamos visualmente */}
-                {value.length > 15 ? `${value.substring(0, 8)}...` : value}
-              </span>
-            </div>
-          )
-        })}
+        {/* Si hay más rutas después del tablero (ej. configuraciones), podrías mapearlas aquí */}
       </div>
 
       {/* DERECHA: Saludo de usuario */}

@@ -117,29 +117,31 @@ export const ListProvider = ({ children, boardId }) => {
   // Función para actualizar una lista (nombre, color, etc).
   const updateList = useCallback(async (boardId, listId, data) => {
     try {
+      console.log('updateList - Actualizando lista:', { boardId, listId, data })
       // Llamamos a updateListReq de listService para actualizar la lista
       const response = await updateListReq(boardId, listId, data)
-      // Actualizamos el estado local para reflejar los cambios
-      setLists(prevLists => prevLists.map(list =>
-        list.id === listId ? { ...list, ...data } : list
-      ))
+      console.log('updateList - Respuesta del servidor:', response)
+      // Recargamos todas las listas para asegurar sincronización
+      await loadLists()
       return response
     } catch (err) {
-      console.error('Error al actualizar lista:', err)
+      console.error('updateList - Error al actualizar lista:', err)
       throw err
     }
-  }, [])
+  }, [loadLists])
 
   // Función para reordenar las listas del tablero.
   const reorderLists = useCallback(async (boardId, reorderData) => {
     try {
+      console.log('reorderLists - Reordenando listas:', { boardId, reorderData })
       // Llamamos a reorderListsReq de listService para reordenar las listas
       const response = await reorderListsReq(boardId, reorderData)
+      console.log('reorderLists - Respuesta del servidor:', response)
       // Recargamos todas las listas para asegurar que tenemos el orden correcto
       await loadLists()
       return response
     } catch (err) {
-      console.error('Error al reordenar listas:', err)
+      console.error('reorderLists - Error al reordenar listas:', err)
       throw err
     }
   }, [loadLists])

@@ -1,11 +1,39 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getBoardsReq } from '../services/boardService.js'
 import { BoardCard } from '../components/BoardCard.jsx'
 import { useBoards } from '../context/BoardContext.jsx'
+import { BoardSettingsModal } from '../components/BoardSettingsModal.jsx'
 
 export const DashboardPage = () => {
-  const { boards, loading } = useBoards()
+  const [isBoardSettingsModalOpen, setIsBoardSettingsModalOpen] = useState(false)
+  const [boardToEdit, setBoardToEdit] = useState(null)
+  const { boards, loading, updateBoard, deleteBoard } = useBoards()
+
+  // Función para abrir el modal (Se la pasaremos a la card)
+  const handleOpenSettings = useCallback((board) => {
+    setBoardToEdit(board) // Guardamos cual es el tablón escogido
+    setIsBoardSettingsModalOpen(true) // Abrimos el modal
+  }, [])
+
+  // Función para actualizar el tablón seleccionado
+  const handleUpdateBoard = useCallback(async (newName) => {
+    try {
+      await updateBoard(boardToEdit.id, newName)
+      setIsBoardSettingsModalOpen(false) // Cerramos al terminar
+    } catch (error) {
+      console.error('Error actualizando: ', error)
+    }
+  }, [])
+
+  // Función para eliminar el tablón seleccionado
+  const handleDeleteBoard = useCallback(async (boardId) => {
+    try {
+      await deleteBoard(boardToEdit.id)
+    } catch (error) {
+      console.log('Error eliminando: ', error)
+    }
+  }, [])
 
   if (loading) return <p className='p-10 text-center'>Cargando tus proyectos....</p>
 

@@ -17,3 +17,9 @@ export const createBoardReq = async (boardData) => {
   const response = await api.post('/boards', boardData)
   return response.data
 }
+
+// Petición para eliminar/archivar un tablón
+export const deleteBoardReq = async (boardId) => {
+  const response = await api.get(`/boards(${boardId})`)
+  return response
+}
