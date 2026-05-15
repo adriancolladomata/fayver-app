@@ -18,8 +18,15 @@ export const createBoardReq = async (boardData) => {
   return response.data
 }
 
+// Petición para modificar un tablón
+export const updateBoardReq = async (boardId, boardData) => {
+  // boardData será un objeto como { name: "Nuevo Nombre" }
+  const response = await api.put(`/boards/${boardId}`, boardData)
+  return response.data
+}
+
 // Petición para eliminar/archivar un tablón
 export const deleteBoardReq = async (boardId) => {
-  const response = await api.get(`/boards(${boardId})`)
-  return response
+  const response = await api.delete(`/boards/${boardId}`)
+  return response.data
 }

@@ -1,39 +1,47 @@
-import { useState, useEffect, useCallback } from 'react'
-import { useAuth } from '../context/AuthContext'
-import { getBoardsReq } from '../services/boardService.js'
+import { useState, useCallback } from 'react'
 import { BoardCard } from '../components/BoardCard.jsx'
 import { useBoards } from '../context/BoardContext.jsx'
 import { BoardSettingsModal } from '../components/BoardSettingsModal.jsx'
 
 export const DashboardPage = () => {
-  const [isBoardSettingsModalOpen, setIsBoardSettingsModalOpen] = useState(false)
   const [boardToEdit, setBoardToEdit] = useState(null)
+  const [isProcessing, setIsProcessing] = useState(null)
   const { boards, loading, updateBoard, deleteBoard } = useBoards()
 
-  // Función para abrir el modal (Se la pasaremos a la card)
   const handleOpenSettings = useCallback((board) => {
-    setBoardToEdit(board) // Guardamos cual es el tablón escogido
-    setIsBoardSettingsModalOpen(true) // Abrimos el modal
+    setBoardToEdit(board)
   }, [])
 
-  // Función para actualizar el tablón seleccionado
+  const handleCloseSettings = useCallback(() => {
+    setBoardToEdit(null)
+  }, [])
+
   const handleUpdateBoard = useCallback(async (newName) => {
+    if (!boardToEdit) return
     try {
+      setIsProcessing(true)
+      // Ejecuta la petición HTTP y actualiza el estado global de boards
       await updateBoard(boardToEdit.id, newName)
-      setIsBoardSettingsModalOpen(false) // Cerramos al terminar
+      handleCloseSettings() // Solo se cierra si la petición fue exitosa
     } catch (error) {
-      console.error('Error actualizando: ', error)
+      alert('Hubo un error al actualizar el nombre del tablón.')
+    } finally {
+      setIsProcessing(false)
     }
-  }, [])
+  }, [boardToEdit, updateBoard, handleCloseSettings])
 
-  // Función para eliminar el tablón seleccionado
-  const handleDeleteBoard = useCallback(async (boardId) => {
+  const handleDeleteBoard = useCallback(async (id) => {
     try {
-      await deleteBoard(boardToEdit.id)
+      setIsProcessing(true)
+      // Ejecuta el Soft-Delete en el backend y lo quita del estado local
+      await deleteBoard(id)
+      handleCloseSettings()
     } catch (error) {
-      console.log('Error eliminando: ', error)
+      alert('Hubo un error al eliminar el tablón.')
+    } finally {
+      setIsProcessing(false)
     }
-  }, [])
+  }, [deleteBoard, handleCloseSettings])
 
   if (loading) return <p className='p-10 text-center'>Cargando tus proyectos....</p>
 
@@ -52,7 +60,11 @@ export const DashboardPage = () => {
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
         {boards.length > 0 ? (
           boards.map(board => (
-            <BoardCard key={board.id} board={board} />
+            <BoardCard
+              key={board.id}
+              board={board}
+              onOpenSettings={handleOpenSettings}
+            />
           ))
         ) : (
           <p className='text-gray-400 col-span-full text-center py-20 border-2 border-dashed rounded-xl'>
@@ -60,6 +72,15 @@ export const DashboardPage = () => {
           </p>
         )}
       </div>
+
+      <BoardSettingsModal
+        isOpen={!!boardToEdit}
+        onClose={handleCloseSettings}
+        board={boardToEdit}
+        onUpdate={handleUpdateBoard}
+        onDelete={handleDeleteBoard}
+        loading={isProcessing}
+      />
     </div>
   )
 }

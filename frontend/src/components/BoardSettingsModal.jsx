@@ -1,17 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export const BoardSettingsModal = ({ isOpen, onClose, board, onUpdate, onDelete, loading }) => {
   const [newName, setNewName] = useState(board?.name || '')
+
+  //Esto asegura que el input siempre muestre el nombre del tablón seleccionado
+  useEffect(() => {
+    if (board) {
+      setNewName(board.name)
+    }
+  }, [board])
 
   if (!isOpen) return null // Si el modal no está abierto, no renderiza nada
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    onUpdate(name)
+    onUpdate(newName)
   }
 
   return (
-    <div className='fixed inset-0 z-50 flex items-center justify-center'>
+    <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
       {/* Contenedor del Modal */}
       <div className='bg-white w-full max-w-md rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden animate-in fade-in zoom-in duration-200 border border-gray-200'>
 
@@ -31,7 +38,7 @@ export const BoardSettingsModal = ({ isOpen, onClose, board, onUpdate, onDelete,
               <input
                 autoFocus
                 type='text'
-                value={name}
+                value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder='Nombre del tablón'
                 className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-800'
@@ -48,7 +55,7 @@ export const BoardSettingsModal = ({ isOpen, onClose, board, onUpdate, onDelete,
               </button>
               <button
                 type='submit'
-                disabled={loading || name === board?.name}
+                disabled={loading || newName === board?.name}
                 className='px-6 py-2 bg-gradient-to-r from-blue-700 to-blue-500 text-white font-bold rounded-lg hover:opacity-90 cursor-pointer transition-colors disabled:opacity-50'
               >
                 {loading ? 'Guardando...' : 'Guardar cambios'}
