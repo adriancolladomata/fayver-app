@@ -8,14 +8,14 @@ export class TaskModel {
   }
 
   static async getTask (taskId, listId) {
-    const [rows] = await db.query('SELECT * FROM tasks WHERE id = ? AND list_id = ?',
+    const [rows] = await db.query('SELECT * FROM tasks WHERE id = ? AND list_id = ? AND deleted_at IS NULL',
       [taskId, listId])
 
     return rows[0]
   }
 
   static async getTasks (listId) {
-    const [rows] = await db.query('SELECT * FROM tasks WHERE list_id = ?',
+    const [rows] = await db.query('SELECT * FROM tasks WHERE list_id = ? AND deleted_at IS NULL ORDER BY `order` ASC',
       [listId]
     )
 
@@ -36,18 +36,18 @@ export class TaskModel {
 
   // Al igual que en las listas, usamos un objeto para desestructurar los campos.
   // Esto permite que desde el controller solo pases lo que quieres cambiar.
-  static async modifyTask (id, list_id, { name, content, order, color, label, status, is_archived }) {
+  static async modifyTask (id, list_id, { name, content, order, color, label, is_completed, is_archived }) {
     const [result] = await db.query(`UPDATE tasks SET 
       name = COALESCE(?, name),
       content = COALESCE(?, content),
       \`order\` = COALESCE(?, \`order\`),
       color = COALESCE(?, color),
       label = COALESCE(?, label),
-      status = COALESCE(?, status),
+      is_completed = COALESCE(?, is_completed),
       is_archived = COALESCE(?, is_archived)
       WHERE id = ? AND list_id = ? AND deleted_at IS NULL`,
     [
-      name ?? null, content ?? null, order ?? null, color ?? null, label ?? null, status ?? null, is_archived ?? null,
+      name ?? null, content ?? null, order ?? null, color ?? null, label ?? null, is_completed ?? null, is_archived ?? null,
       id, list_id
     ])
 
@@ -71,7 +71,7 @@ export class TaskModel {
 
       for (const task of tasks) {
         await connection.query(
-          'UPDATE tasks SET `order` = ? WHERE id = ? AND list_id = ?',
+          'UPDATE tasks SET `order` = ? WHERE id = ? AND list_id = ? AND deleted_at IS NULL',
           [task.order, task.id, list_id]
         )
       }
@@ -94,6 +94,3 @@ export class TaskModel {
     return result
   }
 }
-
-
-

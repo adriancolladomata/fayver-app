@@ -23,3 +23,11 @@ export const deleteTaskReq = async (boardId, listId, taskId) => {
   )
   return response.data
 }
+
+export const updateTaskReq = async (boardId, listId, taskId, data) => {
+  const response = await axiosInstance.patch(
+    `${API_BASE_URL}/${boardId}/lists/${listId}/tasks/${taskId}`,
+    data
+  )
+  return response.data
+}

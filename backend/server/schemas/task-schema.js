@@ -27,9 +27,8 @@ const taskSchema = z.object({
     .nullable()
     .optional(),
 
-  // Validación de los estados que se le pueden asignar a la tarea, asignado 'Por hacer' por defecto
-  status: z.enum(['Por hacer', 'En curso', 'Hecho'])
-    .default('Por hacer'),
+  // Validaciíon de la asignación de si una tarea está completada o no
+  is_completed: z.boolean().optional(),
 
   // validación para que is_archived solo pueda ser si o no (0 = false, 1 = true).. Por defecto no está archivado
   is_archived: z.number()
