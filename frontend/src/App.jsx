@@ -8,6 +8,7 @@ import { Sidebar } from './components/Sidebar'
 import { NavBar } from './components/NavBar'
 import { BoardProvider } from './context/BoardContext'
 
+
 // Definición del componente principal App de la aplicación.
 function App () {
   // Desestructuración de los valores del contexto de la aplicación

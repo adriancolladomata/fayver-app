@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { useLists } from '../context/ListContext'
+import { useTasks } from '../hooks/useTasks'
 
 export const CreateTaskModal = ({ listId, isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { createTask } = useLists()
+  const { createTask } = useTasks()
 
   const handleSubmit = async (e) => {
     e.preventDefault()

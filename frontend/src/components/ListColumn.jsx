@@ -1,24 +1,16 @@
 import { useState } from 'react'
 import { CreateTaskModal } from './CreateTaskModal'
 import { ListSettingsModal } from './ListSettingsModal'
+import { TaskDetailsModal } from './TaskDetailsModal'
 import { useLists } from '../context/ListContext'
 import { useTasks } from '../hooks/useTasks'
 
 export const ListColumn = ({ list, boardId }) => {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [activeTask, setActiveTask] = useState(null)
   const { lists } = useLists()
-  const { deleteTask, updateTask } = useTasks()
-
-  const handleDeleteTask = async (taskId) => {
-    if (confirm('¿Eliminar esta tarea?')) {
-      try {
-        await deleteTask(list.id, taskId)
-      } catch (error) {
-        console.error('Error:', error)
-      }
-    }
-  }
+  const { deleteTask, updateTask } = useTasks(boardId)
 
   const handleToggleComplete = async (taskId, currentStatus) => {
     try {
@@ -56,31 +48,39 @@ export const ListColumn = ({ list, boardId }) => {
             list.tasks.map((task) => (
               <div
                 key={task.id}
-                className='bg-gray-50 p-3 rounded border border-gray-200 hover:shadow-md transition-shadow flex justify-between items-start gap-2'
+                onClick={() => setActiveTask(task)}
+                className='bg-gray-50 p-3 rounded border border-gray-200 hover:shadow-md transition-shadow flex justify-between items-start gap-2 cursor-pointer'
               >
                 {/* Checkbox para completar tarea */}
                 <input
                   type='checkbox'
                   checked={!!task.is_completed}
+                  onClick={(e) => e.stopPropagation()}
                   onChange={() => handleToggleComplete(task.id, task.is_completed)}
                   className='mt-1 cursor-pointer accent-green-600 h-4 w-4 rounded'
                 />
 
                 <div className='flex-1'>
-                  {/* Si está completada se tacha el texto de forma dinámica */}
-                  <p className={`text-sm font-medium transition-all ${
-                    task.is_completed ? 'line-through text-gray-400 font-normal' : 'text-gray-800'
-                  }`}>
-                    {task.name}
-                  </p>
+                  <div className='space-y-1'>
+                    {/* Si está completada se tacha el texto de forma dinámica */}
+                    <p className={`text-sm font-medium transition-all ${
+                      task.is_completed ? 'line-through text-gray-400 font-normal' : 'text-gray-800'
+                    }`}>
+                      {task.name}
+                    </p>
+                    {task.color && task.color !== '#ffffff' && (
+                      <span
+                        className='block h-1 w-full rounded-full'
+                        style={{ backgroundColor: task.color }}
+                      />
+                    )}
+                    {task.label && (
+                      <p className='text-xs text-gray-500'>
+                        {task.label}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <button
-                  onClick={() => handleDeleteTask(task.id)}
-                  className='text-red-500 hover:text-red-700 text-xs cursor-pointer'
-                  title='Eliminar'
-                >
-                  ✕
-                </button>
               </div>
             ))
           ) : (
@@ -100,6 +100,15 @@ export const ListColumn = ({ list, boardId }) => {
         listId={list.id}
         isOpen={showTaskModal}
         onClose={() => setShowTaskModal(false)}
+      />
+
+      <TaskDetailsModal
+        isOpen={!!activeTask}
+        onClose={() => setActiveTask(null)}
+        task={activeTask}
+        boardId={boardId}
+        listId={list.id}
+        tasks={list.tasks}
       />
 
       <ListSettingsModal

@@ -22,7 +22,7 @@ const BoardPageContent = () => {
 
     // Si salimos del tablón, gracias a useEffect, asignamos que el tablón actual es null
     return () => setCurrentBoard(null)
-  })
+  }, [boardId, boards, setCurrentBoard])
 
   useEffect(() => {
     loadLists()

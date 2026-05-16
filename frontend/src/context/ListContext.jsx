@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import { getListsReq, createListReq, deleteListReq, updateListReq, reorderListsReq } from '../services/listService'
-import { getTasksReq, createTaskReq, deleteTaskReq } from '../services/taskService'
+import { getTasksReq } from '../services/taskService'
 
 // Creacion del contexto para las listas
 const ListContext = createContext()
@@ -84,21 +84,6 @@ export const ListProvider = ({ children, boardId }) => {
     // nuevo tablero, y loadLists para recargar las listas después de crear una nueva.
   }, [boardId, loadLists])
 
-  // Función para crear una nueva tarea en la lista actual.
-  const createTask = useCallback(async (listId, name) => {
-    try {
-      // Llamamos a la funcion createTaskReq de taskService para crear una nueva tarea en la lista actual.
-      await createTaskReq(boardId, listId, { name })
-      // Cargamos de nuevo las listas para mostrar la nueva tarea.
-      await loadLists()
-    } catch (err) {
-      console.error('Error al crear tarea:', err)
-      throw err
-    }
-    // El array de dependencias incluye boardId para que, si el usuario cambia de tablero,
-    // se pueda crear una tarea en el nuevo tablero, y loadLists para recargar las listas después de crear la nueva tarea.
-  }, [boardId, loadLists])
-
   // Función para eliminar una lista del tablero actual.
   const deleteList = useCallback(async (listId) => {
     try {
@@ -114,71 +99,46 @@ export const ListProvider = ({ children, boardId }) => {
     // El array de dependencias incluye boardId para que, si el usuario cambia de tablero, se pueda eliminar una lista del nuevo tablero.
   }, [boardId])
 
-  // Función para actualizar una lista (nombre, color, etc).
-  const updateList = useCallback(async (boardId, listId, data) => {
+  const updateList = useCallback(async (listId, data) => {
     try {
-      console.log('updateList - Actualizando lista:', { boardId, listId, data })
-      // Llamamos a updateListReq de listService para actualizar la lista
       const response = await updateListReq(boardId, listId, data)
-      console.log('updateList - Respuesta del servidor:', response)
-      // Recargamos todas las listas para asegurar sincronización
-      await loadLists()
-      return response
-    } catch (err) {
-      console.error('updateList - Error al actualizar lista:', err)
-      throw err
-    }
-  }, [loadLists])
-
-  // Función para reordenar las listas del tablero.
-  const reorderLists = useCallback(async (boardId, reorderData) => {
-    try {
-      console.log('reorderLists - Reordenando listas:', { boardId, reorderData })
-      // Llamamos a reorderListsReq de listService para reordenar las listas
-      const response = await reorderListsReq(boardId, reorderData)
-      console.log('reorderLists - Respuesta del servidor:', response)
-      // Recargamos todas las listas para asegurar que tenemos el orden correcto
-      await loadLists()
-      return response
-    } catch (err) {
-      console.error('reorderLists - Error al reordenar listas:', err)
-      throw err
-    }
-  }, [loadLists])
-
-  // Función para eliminar una tarea de una lista.
-  const deleteTask = useCallback(async (listId, taskId) => {
-    try {
-      // Llamada a deleteTaskReqd de taskService para eliminar la tarea
-      await deleteTaskReq(boardId, listId, taskId)
-      // Actualizamos el estado de las listas eliminando la tarea que hemos borrado, para actualizar la interfaz
-      // sin la necesidad de recargar todas las listas, usando setLists para modificar la lista correspondiente y filtrar
-      // la tarea eliminada.
-      setLists(prevLists => prevLists.map(list => list.id === listId
-        ? { ...list, tasks: list.tasks.filter(task => task.id !== taskId) }
-        : list
+      setLists(prevLists => prevLists.map(list =>
+        list.id === listId ? { ...list, ...data } : list
       ))
+      return response
     } catch (err) {
-      console.error('Error al eliminar tarea:', err)
+      console.error('Error al actualizar la lista:', err)
       throw err
     }
   }, [boardId])
 
+  const reorderLists = useCallback(async (listsOrder) => {
+    try {
+      const response = await reorderListsReq(boardId, listsOrder)
+      await loadLists()
+      return response
+    } catch (err) {
+      console.error('Error al reordenar las listas:', err)
+      throw err
+    }
+  }, [boardId, loadLists])
+
   // Creamos el objeto value que incluye los datos y funciones que queremos compartir en el contexto.
   // En este caso, compartimos la lista de listas, el estado de carga, la función para cargar las listas,
   // la función para crear una nueva lista, la función para crear una nueva tarea, la función para eliminar una lista,
-  // la función para eliminar una tarea, la función para actualizar una lista y la función para reordenar las listas.
+  // y la función para eliminar una tarea
   const value = {
     lists,
+    setLists,
     loading,
     loadLists,
     createList,
-    createTask,
     deleteList,
-    deleteTask,
     updateList,
     reorderLists
   }
 
+  // Devolvemos el ListContext.Provider con el valor del contexto y envolviendo a toda la aplicación (children)
+  // para que todos los componentes puedan acceder a los datos y funciones del contexto.
   return <ListContext.Provider value={value}>{children}</ListContext.Provider>
 }
