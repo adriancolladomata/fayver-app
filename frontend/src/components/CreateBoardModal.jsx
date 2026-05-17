@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { createBoardReq } from '../services/boardService'
 import { useBoards } from '../context/BoardContext'
+import { useToast } from '../context/ToastContext'
 
 export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
-  const { createBoard } = useBoards() // Extraemos la función
+  const { createBoard } = useBoards()
+  const { showToast } = useToast()
 
   // Si isOpen es false, el componente no renderiza nada (el modal no se muestra)
   if (!isOpen) return null
@@ -15,7 +17,10 @@ export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
     // Evitamos que el formulaario recarguela página al hacer submit
     e.preventDefault()
     // Si el nombre está vacío, mostramos una alerta y no hacemos nada más
-    if (!name.trim()) return alert('El nombre es obligatorio')
+    if (!name.trim()) {
+      showToast('El nombre es obligatorio', 'error')
+      return
+    }
 
     // Indicamos que estamos en proceso de creación para deshabilitar el botón
     setLoading(true)
@@ -24,14 +29,14 @@ export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
       // Usamos la función del BoardContext para crear el nuevo tablero, la cual se encargará de hacer la petición al backend
       // y atualizar el estado global de los tableros
       await createBoard(name)
-      // Limpiamos y cerramos
+      showToast('Tablón creado con éxito', 'success')
       setName('')
       // Cerramos el modal
       onClose()
     } catch (error) {
       // En caso de error, lo mostramos en consola y alertamos al usuario
       console.error('Error al crear:', error)
-      alert('No se pudo crear el tablón')
+      showToast('No se pudo crear el tablón', 'error')
     } finally {
       setLoading(false)
     }

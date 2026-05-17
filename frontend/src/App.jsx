@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useAuth } from './context/AuthContext'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
@@ -7,7 +8,6 @@ import { BoardPage } from './pages/BoardPage'
 import { Sidebar } from './components/Sidebar'
 import { NavBar } from './components/NavBar'
 import { BoardProvider } from './context/BoardContext'
-
 
 // Definición del componente principal App de la aplicación.
 function App () {
@@ -26,7 +26,7 @@ function App () {
             <Sidebar />
 
             {/* Contenedor derecho: flex-col para poner la NavBar arriba y el contenido abajo */}
-            <div className='flex-1 flex flex-col'>
+            <div className='flex-1 flex flex-col min-w-0'>
               {/* Renderizamos la barra de navegación aquí, arriba de las rutas */}
               <NavBar />
 
@@ -45,7 +45,7 @@ function App () {
         </BoardProvider>
 
       ) : (
-        /* Si no está logueado, muestra solo las rutas públicas */
+      /* Si no está logueado, muestra solo las rutas públicas */
         <div className='min-h-screen bg-gray-50'>
           <Routes>
             <Route path='/login' element={<LoginPage />}></Route>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FayverFlowLogo } from '../assets/fayver'
+import { useToast } from '../context/ToastContext'
 
 export const RegisterPage = () => {
   // Hook para navegar entre rutas
@@ -13,6 +14,7 @@ export const RegisterPage = () => {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { register } = useAuth()
+  const { showToast } = useToast()
 
   const handleSubmit = async (e) => {
     // Evita que la página se recargue
@@ -21,13 +23,13 @@ export const RegisterPage = () => {
     try {
       // Esta función viene de AuthContext. Si el registro sale bien, envia un alert específico
       await register(name, email, password, confirmPassword)
-      alert('Te has registrado correctamente en Fayver')
+      showToast('Te has registrado correctamente en Fayver', 'success')
       // Redirige al login después del registro exitoso
       navigate('/login')
     } catch (error) {
       // Si el registro sale mal, envia un console.log con el error y un alert
       console.log('ERROR DETALLADO: ', error.response?.data)
-      alert(error.response?.data?.message || 'Error al registrarse')
+      showToast(error.response?.data?.message || 'Error al registrarse', 'error')
     } finally {
       setIsLoading(false)
     }

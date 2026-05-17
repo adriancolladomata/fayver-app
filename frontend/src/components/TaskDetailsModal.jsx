@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTasks } from '../hooks/useTasks'
+import { useToast } from '../context/ToastContext' // 🎯 Importamos el Toast global
+import { useConfirmation } from '../context/ConfirmationContext' // 🎯 Importamos la Confirmación global
 
 const colorOptions = [
   '#ffffff',
@@ -18,7 +20,9 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
   const [tags, setTags] = useState('')
   const [order, setOrder] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState({ type: '', text: '' })
+
+  const { showToast } = useToast()
+  const { requireConfirm } = useConfirmation()
   const { updateTask, deleteTask } = useTasks(boardId)
 
   useEffect(() => {
@@ -29,7 +33,6 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     setColor(task.color || '#ffffff')
     setTags(task.label || '')
     setOrder(task.order ?? 0)
-    setMessage({ type: '', text: '' })
   }, [task])
 
   const handleSave = async (event) => {
@@ -42,7 +45,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     const updateData = {}
 
     if (trimmedName.length === 0) {
-      setMessage({ type: 'error', text: 'El nombre de la tarea no puede estar vacío.' })
+      showToast('El nombre de la tarea no puede estar vacío.', 'error')
       return
     }
 
@@ -57,35 +60,42 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     }
 
     if (Object.keys(updateData).length === 0) {
-      setMessage({ type: 'error', text: 'No hay cambios para guardar.' })
+      showToast('No hay cambios para guardar.', 'error')
       return
     }
 
     try {
       setLoading(true)
       await updateTask(listId, task.id, updateData)
-      setMessage({ type: 'success', text: 'Tarea guardada correctamente.' })
-      setTimeout(() => {
-        onClose()
-      }, 500)
+      showToast('Tarea guardada correctamente.', 'success')
+      onClose() // 🎯 Cierre inmediato sin setTimeout molesto
     } catch (error) {
       console.error('Error al guardar tarea:', error)
-      setMessage({ type: 'error', text: 'No se pudo guardar la tarea.' })
+      showToast('No se pudo guardar la tarea.', 'error')
     } finally {
       setLoading(false)
     }
   }
 
   const handleDelete = async () => {
-    if (!task || !confirm('¿Eliminar esta tarea?')) return
+    if (!task) return
+
+    // 🎯 Quitamos el "if (!task || !confirm(...))" que tenías duplicado arriba
+    const hasConfirmed = await requireConfirm(
+      '¿Eliminar esta tarea?',
+      `Estás a punto de borrar "${task.name}". Todos los comentarios y descripciones dentro de ella desaparecerán.`
+    )
+
+    if (!hasConfirmed) return
 
     try {
       setLoading(true)
       await deleteTask(listId, task.id)
-      onClose()
+      showToast('Tarea eliminada con éxito', 'success')
+      onClose() // 🎯 Cierra el modal de detalles enseguida tras borrar
     } catch (error) {
       console.error('Error al eliminar tarea:', error)
-      setMessage({ type: 'error', text: 'No se pudo eliminar la tarea.' })
+      showToast('No se pudo eliminar la tarea.', 'error')
     } finally {
       setLoading(false)
     }
@@ -201,11 +211,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
             </div>
           </div>
 
-          {message.text && (
-            <div className={`rounded-lg p-3 text-sm ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-              {message.text}
-            </div>
-          )}
+          {/* 🎯 Limpiado el bloque HTML obsoleto de {message.text && ...} */}
 
           <div className='flex flex-col gap-3 md:flex-row md:justify-between'>
             <button

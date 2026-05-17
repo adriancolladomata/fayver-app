@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useConfirmation } from '../context/ConfirmationContext'
 
 export const BoardSettingsModal = ({ isOpen, onClose, board, onUpdate, onDelete, loading }) => {
   const [newName, setNewName] = useState(board?.name || '')
+  const { requireConfirm } = useConfirmation()
 
   //Esto asegura que el input siempre muestre el nombre del tablón seleccionado
   useEffect(() => {
@@ -15,6 +17,18 @@ export const BoardSettingsModal = ({ isOpen, onClose, board, onUpdate, onDelete,
   const handleSubmit = (e) => {
     e.preventDefault()
     onUpdate(newName)
+  }
+
+  // Manejador asíncrono
+  const handleDeleteClick = async () => {
+    const hasConfirmed = await requireConfirm(
+      '¿Eliminar este tablón?',
+      `Esta acción eliminará de forma permanente el tablón "${board?.name}" junto con todas sus listas y tarjetas asociadas.`
+    )
+
+    if (hasConfirmed) {
+      onDelete(board.id)
+    }
   }
 
   return (
@@ -65,18 +79,11 @@ export const BoardSettingsModal = ({ isOpen, onClose, board, onUpdate, onDelete,
 
           {/* Sección: Zona de Peligro (Eliminar) */}
           <div className='mt-6'>
-            <label className='block text-red-600 text-sm font-bold mb-2'>
-              Zona de peligro
-            </label>
             <div className='flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-100'>
               <span className='text-xs text-red-700'>Esta acción eliminará el tablón y todas sus listas.</span>
               <button
                 type='button'
-                onClick={() => {
-                  if (window.confirm('¿Estás seguro de que quieres eliminar este tablón?')) {
-                    onDelete(board.id)
-                  }
-                }}
+                onClick={handleDeleteClick}
                 className='px-3 py-2 bg-red-600 text-white text-xs font-bold rounded-lg hover:bg-red-700 transition-colors cursor-pointer'
               >
                 Eliminar

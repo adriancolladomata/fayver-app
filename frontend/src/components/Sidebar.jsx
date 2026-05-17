@@ -25,14 +25,6 @@ export const Sidebar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Estás seguro de borrar este tablón?')) {
-      console.log('Borrando tablón:', id)
-      // Aquí llamarías a tu función de borrar del contexto
-    }
-    setActiveMenu(null)
-  }
-
   const handleLogout = () => {
     logout()
     navigate('/login')

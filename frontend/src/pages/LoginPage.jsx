@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { FayverFlowLogo } from '../assets/fayver'
+import { useToast } from '../context/ToastContext'
 
 export const LoginPage = () => {
   // Hook para navegar entre rutas
@@ -11,6 +12,7 @@ export const LoginPage = () => {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { login, user } = useAuth()
+  const { showToast } = useToast()
 
   // Cuando el usuario se actualiza (después del login), redirigir al dashboard
   useEffect(() => {
@@ -26,12 +28,12 @@ export const LoginPage = () => {
     try {
       // Esta función viene de AuthContext. Si el login sale bien, actualiza el estado user.
       await login(email, password)
-      alert('Has iniciado sesión en Fayver')
+      showToast('Has iniciado sesión en Fayver', 'success')
       // El useEffect se encargará de la redirección cuando user se actualice
     } catch (error) {
       // Si el login sale mal. Envia un console.log con el error y un alert.
       console.log('ERROR DETALLADO: ', error.response?.data)
-      alert(error.response?.data?.message || 'Error al entrar')
+      showToast(error.response?.data?.message || 'Error al entrar', 'error')
     } finally {
       setIsLoading(false)
     }
