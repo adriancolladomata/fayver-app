@@ -2,10 +2,10 @@ import mysql from 'mysql2/promise'
 
 //mysql.createPool() soporta mas usuarios, es más rapido y más estable que createConnection()
 export const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  database: 'fayver_db',
-  password: 'root',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
   waitForConnections: true,
   connectionLimit: 10
 })
