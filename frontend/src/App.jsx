@@ -1,4 +1,5 @@
 // src/App.jsx
+import { useState } from 'react'
 import { useAuth } from './context/AuthContext'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
@@ -13,6 +14,7 @@ import { BoardProvider } from './context/BoardContext'
 function App () {
   // Desestructuración de los valores del contexto de la aplicación
   const { user, loading } = useAuth()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // Mientras comprobamos si hay usuario o no, mostramos una pantalla de carga
   if (loading) return <h1>Iniciando sesión en Fayver...</h1>
@@ -23,12 +25,12 @@ function App () {
       {user ? (
         <BoardProvider>
           <div className='flex h-screen bg-gray-50 overflow-hidden'>
-            <Sidebar />
+            <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
             {/* Contenedor derecho: flex-col para poner la NavBar arriba y el contenido abajo */}
             <div className='flex-1 flex flex-col min-w-0'>
               {/* Renderizamos la barra de navegación aquí, arriba de las rutas */}
-              <NavBar />
+              <NavBar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
               {/* Contenedor principal de las páginas con scroll independiente */}
               <main className='flex-1 overflow-y-auto p-6'>

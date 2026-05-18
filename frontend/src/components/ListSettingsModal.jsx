@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useLists } from '../context/ListContext'
 
 export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) => {
@@ -8,6 +8,13 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const { updateList, reorderLists, deleteList } = useLists()
+
+  useEffect(() => {
+    if (isOpen && list) {
+      setNewName(list.name || '')
+      setSelectedColor(list.color || '#ffffff')
+    }
+  }, [isOpen, list])
 
   const colors = [
     '#ffffff',
@@ -34,7 +41,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
       setLoading(true)
       setMessage({ type: '', text: '' })
       console.log('Intentando actualizar nombre:', { boardId, listId: list.id, newName: newName.trim() })
-      await updateList(boardId, list.id, { name: newName.trim() })
+      await updateList(list.id, { name: newName.trim() })
       setMessage({ type: 'success', text: 'Nombre actualizado correctamente' })
       setTimeout(() => {
         setCurrentTab('main')
@@ -54,7 +61,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
     try {
       setLoading(true)
       setMessage({ type: '', text: '' })
-      await updateList(boardId, list.id, { color: selectedColor })
+      await updateList(list.id, { color: selectedColor })
       setMessage({ type: 'success', text: 'Color actualizado correctamente' })
       setTimeout(() => {
         setCurrentTab('main')
@@ -84,7 +91,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
           order: index
         }))
 
-        await reorderLists(boardId, reorderData)
+        await reorderLists(reorderData)
         setMessage({ type: 'success', text: 'Lista movida correctamente' })
         setTimeout(() => {
           setCurrentTab('main')
@@ -142,7 +149,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
             <div className='p-6 space-y-3'>
               <button
                 onClick={() => setCurrentTab('rename')}
-                className='w-full text-left px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-800 flex items-center gap-3'
+                className='w-full text-left px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-800 flex items-center gap-3 cursor-pointer'
                 disabled={loading}
               >
                 <span>Cambiar nombre</span>
@@ -150,7 +157,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
 
               <button
                 onClick={() => setCurrentTab('move')}
-                className='w-full text-left px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-800 flex items-center gap-3'
+                className='w-full text-left px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-800 flex items-center gap-3 cursor-pointer'
                 disabled={loading}
               >
                 <span>Mover lista</span>
@@ -158,7 +165,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
 
               <button
                 onClick={() => setCurrentTab('color')}
-                className='w-full text-left px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-800 flex items-center gap-3'
+                className='w-full text-left px-4 py-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors font-medium text-gray-800 flex items-center gap-3 cursor-pointer'
                 disabled={loading}
               >
                 <span>Cambiar color</span>
@@ -166,7 +173,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
 
               <button
                 onClick={() => setCurrentTab('delete')}
-                className='w-full text-left px-4 py-3 rounded-lg bg-red-50 hover:bg-red-100 transition-colors font-medium text-red-700 flex items-center gap-3'
+                className='w-full text-left px-4 py-3 rounded-lg bg-red-50 hover:bg-red-100 transition-colors font-medium text-red-700 flex items-center gap-3 cursor-pointer'
                 disabled={loading}
               >
                 <span>Eliminar lista</span>
@@ -251,7 +258,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
                   <button
                     key={l.id}
                     onClick={() => handleMoveList(index)}
-                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors font-medium ${
+                    className={`w-full text-left px-4 py-3 rounded-lg transition-colors cursor-pointer font-medium ${
                       l.id === list.id
                         ? 'bg-blue-100 text-blue-800 border-2 border-blue-500'
                         : 'bg-gray-50 hover:bg-gray-100 text-gray-800'
@@ -281,7 +288,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
                     setCurrentTab('main')
                     setMessage({ type: '', text: '' })
                   }}
-                  className='px-4 py-2 text-gray-600 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors'
+                  className='px-4 py-2 text-gray-600 hover:bg-gray-200 cursor-pointer rounded-lg transition-colors'
                   disabled={loading}
                 >
                   Atrás

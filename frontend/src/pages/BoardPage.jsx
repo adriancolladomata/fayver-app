@@ -9,6 +9,7 @@ const BoardPageContent = () => {
   const { boardId } = useParams()
   const navigate = useNavigate()
   const [showListModal, setShowListModal] = useState(false)
+  const [currentBoardInfo, setCurrentBoardInfo] = useState(null)
   const { lists, loading, loadLists } = useLists()
   const { boards, setCurrentBoard } = useBoards()
 
@@ -18,10 +19,14 @@ const BoardPageContent = () => {
     // Si hay tablon actual, se lo asignamos a currentBoard en BoardContext
     if (current) {
       setCurrentBoard(current)
+      setCurrentBoardInfo(current)
     }
 
-    // Si salimos del tablón, gracias a useEffect, asignamos que el tablón actual es null
-    return () => setCurrentBoard(null)
+    // Si salimos del tablón, limpiamos ambos estados gracias a useEffect
+    return () => {
+      setCurrentBoard(null)
+      setCurrentBoardInfo(null)
+    }
   }, [boardId, boards, setCurrentBoard])
 
   useEffect(() => {
@@ -36,7 +41,7 @@ const BoardPageContent = () => {
     <div className='min-h-screen bg-gray-50 p-8'>
       <div className='mb-8 flex justify-between items-center'>
         <div>
-          <h1 className='text-3xl font-bold text-gray-800'>Tablón</h1>
+          <h1 className='text-3xl font-bold text-gray-800'>{currentBoardInfo ? currentBoardInfo.name : 'Tablón'}</h1>
           <p className='text-gray-600 mt-2'>{lists.length} lista(s)</p>
         </div>
         <button

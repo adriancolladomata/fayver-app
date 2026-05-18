@@ -38,6 +38,7 @@ export const ListColumn = ({ list, boardId }) => {
             onClick={() => setShowSettingsModal(true)}
             className='w-5 h-5 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer flex items-center justify-center'
             title='Configurar lista'
+            alt='Botón de configuración de la lista'
           >
             <img src='../SVGDotsVertical.svg' alt='Icono tres puntos' className='w-5 h-5' />
           </button>
@@ -74,11 +75,24 @@ export const ListColumn = ({ list, boardId }) => {
                         style={{ backgroundColor: task.color }}
                       />
                     )}
-                    {task.label && (
-                      <p className='text-xs text-gray-500'>
-                        {task.label}
-                      </p>
-                    )}
+                    {task.label && task.label.trim() ? (
+                      <div className='flex flex-wrap gap-1.5 mt-2'>
+                        {task.label.split(',').map((tag, index) => {
+                          const cleanTag = tag.trim()
+                          // Si el usuario puso comas de más (ej: "Urgente,, Frontend"), ignoramos los espacios vacíos
+                          if (!cleanTag) return null
+
+                          return (
+                            <span
+                              key={`${cleanTag}-${index}`}
+                              className='text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200/60'
+                            >
+                              {cleanTag}
+                            </span>
+                          )
+                        })}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

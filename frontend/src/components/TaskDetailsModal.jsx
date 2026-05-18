@@ -42,33 +42,43 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     const trimmedName = name.trim()
     const trimmedContent = content.trim()
     const trimmedTags = tags.trim()
-    const updateData = {}
 
     if (trimmedName.length === 0) {
       showToast('El nombre de la tarea no puede estar vacío.', 'error')
       return
     }
 
-    if (trimmedName !== task.name) updateData.name = trimmedName
-    if (color !== (task.color || '#ffffff')) updateData.color = color
-    if (trimmedContent !== (task.content || '').trim()) updateData.content = trimmedContent || null
-    if (trimmedTags !== (task.label || '').trim()) updateData.label = trimmedTags || null
-
+    // 🎯 Comprobamos primero si realmente hubo algún cambio global
+    const hasNameChanged = trimmedName !== task.name
+    const hasColorChanged = color !== (task.color || '#ffffff')
+    const hasContentChanged = trimmedContent !== (task.content || '').trim()
+    const hasTagsChanged = trimmedTags !== (task.label || '').trim()
     const newOrder = Number(order)
-    if (!Number.isNaN(newOrder) && newOrder !== task.order) {
-      updateData.order = newOrder
-    }
+    const hasOrderChanged = !Number.isNaN(newOrder) && newOrder !== task.order
 
-    if (Object.keys(updateData).length === 0) {
+    if (!hasNameChanged && !hasColorChanged && !hasContentChanged && !hasTagsChanged && !hasOrderChanged) {
       showToast('No hay cambios para guardar.', 'error')
       return
+    }
+
+    // 🎯 Construimos el objeto enviando SIEMPRE las propiedades críticas.
+    // De esta forma, si el backend no es dinámico, no pisará datos con valores por defecto.
+    const updateData = {
+      name: trimmedName,
+      color: color, // 👈 Se envía siempre el color actual seleccionado
+      content: trimmedContent || null,
+      label: trimmedTags || null
+    }
+
+    if (hasOrderChanged) {
+      updateData.order = newOrder
     }
 
     try {
       setLoading(true)
       await updateTask(listId, task.id, updateData)
       showToast('Tarea guardada correctamente.', 'success')
-      onClose() // 🎯 Cierre inmediato sin setTimeout molesto
+      onClose()
     } catch (error) {
       console.error('Error al guardar tarea:', error)
       showToast('No se pudo guardar la tarea.', 'error')
