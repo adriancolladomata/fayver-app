@@ -1,8 +1,6 @@
-# 📦 Dependencias (Ocupan mucho espacio y se regeneran con npm install)
 node_modules/
 **/node_modules/
 
-# 🔒 Archivos de configuración secreta (¡NUNCA SE SUBEN!)
 .env
 .env.local
 .env.development.local
@@ -11,12 +9,10 @@ node_modules/
 **/.env
 **/.env.local
 
-# 🚀 Carpetas de producción / compilación
 dist/
 build/
 .production/
 
-# 💻 Archivos del sistema operativo o del editor
 .DS_Store
 .vscode/
 .idea/
