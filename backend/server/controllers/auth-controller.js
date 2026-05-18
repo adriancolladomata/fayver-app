@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import { UserModel } from '../models/user-model.js'
 import { validateUser, validatePartialUser, validateLogin } from '../schemas/user-schema.js'
-import { SALT_ROUNDS, SECRET_JWT_KEY } from '../../config.js'
+import { SALT_ROUNDS, SECRET_JWT_KEY, NODE_ENV } from '../../config.js'
 import jwt from 'jsonwebtoken'
 
 // Método para el registro del usuario
@@ -75,8 +75,8 @@ export const login = async (req, res) => {
 
     const options = {
       httpOnly: true, // La cookie solo es accesible en el servidor
-      secure: process.env.NODE_ENV === 'production', // La cookie solo es accesible en https
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
+      secure: NODE_ENV === 'production', // La cookie solo es accesible en https
+      sameSite: NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
       maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
     }
 
@@ -114,8 +114,8 @@ export const getMe = async (req, res) => {
 export const logout = async (req, res) => {
   const options = {
     httpOnly: true, // La cookie solo es accesible en el servidor
-    secure: process.env.NODE_ENV === 'production', // La cookie solo es accesible en https
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
+    secure: NODE_ENV === 'production', // La cookie solo es accesible en https
+    sameSite: NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
     maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
   }
 
