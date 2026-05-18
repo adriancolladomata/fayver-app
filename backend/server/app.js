@@ -15,8 +15,8 @@ app.disable('x-powered-by')
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-  origin: 'http://localhost:5173', // URL de Vite (Frontend)
-  credentials: true // Obligatorio para permitir el envío de Cookies
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Dinámico para producción
+  credentials: true
 }))
 
 // Rutas
