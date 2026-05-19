@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await loginReq(email, password)
     localStorage.setItem('fayver_token', res.token)
-    setUser(res)
+    setUser(res.user)
   }
 
   // Llama a registerReq, y si el backend responde con exito, muestra un mensaje de éxito
