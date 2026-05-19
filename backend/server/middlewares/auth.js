@@ -3,8 +3,10 @@ import { SECRET_JWT_KEY } from '../../config.js';
 
 // Middleware para buscar el toquen en todas las rutas
 export const requireAuth = (req, res, next) => {
+  // Buscamos el token de autorization en los headers
+  const authHeader = req.headers['authorization']
   // Busca una cookie llamada access_token /// ? -> Si req.cookies es undefined no da error, sigue el programa
-  const token = req.cookies?.access_token
+  const token = authHeader && authHeader.split(' ')[1] // Extracción del token recortadno el espacio
 
   // Si no hay token devuelve un error de 'No autenticado'
   if (!token) {

@@ -73,21 +73,14 @@ export const login = async (req, res) => {
       }
     )
 
-    const options = {
-      httpOnly: true, // La cookie solo es accesible en el servidor
-      secure: NODE_ENV === 'production', // La cookie solo es accesible en https
-      sameSite: NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
-      maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
-    }
-
-    // Envia una cookie al navegador del usuario
-    res.cookie('access_token', token, options)
-
-    // Desestructuración con rest operator. _ extrae la propiedad password y la guarda en una variable _ (La saca pero no la usa)
-    // ...publicUser almacena el resto de datos de user. mostraria:
-    // Función: Mostrar todo el usuario menos la contraseña
+    // Se limpia la contraseña para no enviarla al cliente
     const { password_hash: _, ...publicUser} = user
-    return res.json(publicUser) // publicUser = {id: ---, name: ---, email: ---}
+
+    // Enviaos el usuario junto con su token en la respuesta JSON
+    return res.json({
+      user: publicUser,
+      token: token
+    })
 
   } catch (error) {
     return res.status(500).json({ message: error.message })
@@ -112,19 +105,11 @@ export const getMe = async (req, res) => {
 
 
 export const logout = async (req, res) => {
-  const options = {
-    httpOnly: true, // La cookie solo es accesible en el servidor
-    secure: NODE_ENV === 'production', // La cookie solo es accesible en https
-    sameSite: NODE_ENV === 'production' ? 'none' : 'lax', // Lax permit navegacion normal, formularios y evita problemas con localhost
-    maxAge: 1000 * 60 * 60 // La cookie tiene un tiempo de validez de 1 hora
-  }
-
   try {
-    res.clearCookie('access_token', options)
-
-    return res.status(200).json({ message: 'Logout correcto '})
+    // Ahora el logout en backend solo avisa que todo fue bien, el frontend limpiará el LocalStorage
+    return res.status(200).json({ message: 'Logout correcto' })
   } catch (error) {
-    return res.status(500).json({ message: 'Error al hacer logout'})
+    return res.status(500).json({ message: 'Error al hacer logout' })
   }
 }
 

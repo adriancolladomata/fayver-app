@@ -17,10 +17,20 @@ export const AuthProvider = ({ children }) => {
   // LLama a getMeReq(). Si el backend dice "OK", entonces la cookie es válida, y setUser guarda al usuario. Si falla, el user seguirá siendo null
   useEffect(() => {
     const checkUser = async () => {
+      const token = localStorage.getItem('fayver_token')
+
+      // Si no hay ningún token guardado en LocalStorage, ni intentamos llamar al backend
+      if (!token) {
+        setUser(null)
+        setLoading(false)
+        return
+      }
+
       try {
         const res = await getMeReq()
         setUser(res)
       } catch (error) {
+        localStorage.removeItem('fayver_token') // // Si el token expiró o es inválido, limpiamos todo
         setUser(null) // Si falla, no hay usuario logueado
       } finally {
         setLoading(false)
@@ -32,6 +42,7 @@ export const AuthProvider = ({ children }) => {
   // Llama a loginReq, y si el backend responde con exito, enviamos la información al usaurio y actualizamos su estado
   const login = async (email, password) => {
     const res = await loginReq(email, password)
+    localStorage.setItem('fayver_token', res.token)
     setUser(res)
   }
 
@@ -44,12 +55,13 @@ export const AuthProvider = ({ children }) => {
   // Función para cerrar sesión del usuario
   const logout = async () => {
     try {
-      // Llamar al backend para que borre la cookie (access_token)
+      // Llamar al backend para hacer la petición
       await logoutReq()
-      setUser(null)
     } catch (error) {
       console.error('Error al cerrar sesión: ', error)
-      // Aunque falle la petición al backend, limpiamos el estado del frontend
+    } finally {
+      // Limpiamos siempre el token y el estado en el cliente pase lo que pase
+      localStorage.removeItem('fayver_token')
       setUser(null)
     }
   }
