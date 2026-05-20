@@ -7,11 +7,13 @@ import { useBoards } from '../context/BoardContext'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { reorderListsReq } from '../services/listService'
+import { ArchivedElementsModal } from '../components/ArchivedElementsModal'
 
 const BoardPageContent = () => {
   const { boardId } = useParams()
   const navigate = useNavigate()
   const [showListModal, setShowListModal] = useState(false)
+  const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [currentBoardInfo, setCurrentBoardInfo] = useState(null)
   const { lists, loading, loadLists } = useLists()
   const { boards, setCurrentBoard } = useBoards()
@@ -90,23 +92,36 @@ const BoardPageContent = () => {
 
   return (
     <div className='min-h-screen bg-gray-50 p-8'>
+
+      {/* CABECERA DEL TABLERO */}
       <div className='mb-8 flex justify-between items-center'>
         <div>
           <h1 className='text-3xl font-bold text-gray-800'>{currentBoardInfo ? currentBoardInfo.name : 'Tablón'}</h1>
           <p className='text-gray-600 mt-2'>{localLists.length} lista(s)</p>
         </div>
-        <button
-          onClick={() => navigate('/dashboard')}
-          className='px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors'
-        >
-          ← Volver
-        </button>
+
+        {/* Acciones de la cabecera */}
+        <div className='flex items-center gap-3'>
+          {/* 📦 3. Botón de Elementos Archivados integrado estéticamente */}
+          <button
+            onClick={() => setShowArchiveModal(true)}
+            className='px-4 py-2 bg-amber-50 border border-amber-200 text-amber-800 font-medium rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
+          >
+            <span>📦</span> Elementos Archivados
+          </button>
+
+          <button
+            onClick={() => navigate('/dashboard')}
+            className='px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer'
+          >
+            ← Volver
+          </button>
+        </div>
       </div>
 
+      {/* RENDERIZADO DE LISTAS Y DRAG AND DROP */}
       <div className='overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-gray-300'>
         <div className='flex gap-6 min-w-min'>
-
-          {/* Envolturuas de dnd aplicadas */}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={localLists.map(l => l.id)} strategy={horizontalListSortingStrategy}>
               {localLists.map(list => (
@@ -118,7 +133,7 @@ const BoardPageContent = () => {
           <div className='flex-shrink-0 w-80'>
             <button
               onClick={() => setShowListModal(true)}
-              className='w-full h-full min-h-32 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center bg-white'
+              className='w-full h-full min-h-32 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 hover:bg-gray-100 transition-colors flex items-center justify-center bg-white cursor-pointer'
             >
               <div className='text-center'>
                 <p className='text-4xl text-gray-400 mb-2'>+</p>
@@ -129,9 +144,17 @@ const BoardPageContent = () => {
         </div>
       </div>
 
+      {/* Modales controlados */}
       <CreateListModal
         isOpen={showListModal}
         onClose={() => setShowListModal(false)}
+      />
+
+      {/* 📦 4. Inyección del Modal de Archivados */}
+      <ArchivedElementsModal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        boardId={boardId}
       />
     </div>
   )

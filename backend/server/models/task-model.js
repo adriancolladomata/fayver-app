@@ -15,7 +15,7 @@ export class TaskModel {
   }
 
   static async getTasks (listId) {
-    const [rows] = await db.query('SELECT * FROM tasks WHERE list_id = ? AND deleted_at IS NULL ORDER BY `order` ASC',
+    const [rows] = await db.query('SELECT * FROM tasks WHERE list_id = ? AND is_archived = 0 AND deleted_at IS NULL ORDER BY `order` ASC',
       [listId]
     )
 

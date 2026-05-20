@@ -9,7 +9,7 @@ export class ListModel {
   }
 
   static async getLists (board_id) {
-    const [rows] = await db.query('SELECT * FROM lists WHERE board_id = ? AND deleted_at IS NULL ORDER BY `order` ASC',
+    const [rows] = await db.query('SELECT * FROM lists WHERE board_id = ? AND is_archived = 0 AND deleted_at IS NULL ORDER BY `order` ASC',
       [board_id]
     )
 
