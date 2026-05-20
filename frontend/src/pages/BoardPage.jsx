@@ -102,12 +102,16 @@ const BoardPageContent = () => {
 
         {/* Acciones de la cabecera */}
         <div className='flex items-center gap-3'>
-          {/* 📦 3. Botón de Elementos Archivados integrado estéticamente */}
+          {/* Botón de Elementos Archivados integrado estéticamente */}
           <button
             onClick={() => setShowArchiveModal(true)}
             className='px-4 py-2 bg-amber-50 border border-amber-200 text-amber-800 font-medium rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
           >
-            <span>📦</span> Elementos Archivados
+            <img
+              src="../SVG Show SideBar.svg"
+              alt="Ocultar barra lateral"
+              className="w-4 h-4 invert opacity-90 group-hover:opacity-100 transition-opacity"
+            />
           </button>
 
           <button

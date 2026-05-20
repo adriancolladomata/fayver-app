@@ -74,7 +74,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
         {/* Cabecera */}
         <div className='p-4 border-b border-neutral-100 flex justify-between items-center bg-neutral-50 rounded-t-xl'>
           <h2 className='text-lg font-bold text-neutral-800 flex items-center gap-2'>
-            <span>📦</span> Elementos Archivados
+            Elementos Archivados
           </h2>
           <button onClick={onClose} className='text-neutral-400 hover:text-neutral-600 font-bold p-1 cursor-pointer'>✕</button>
         </div>
