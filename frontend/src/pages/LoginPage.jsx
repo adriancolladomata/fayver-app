@@ -31,15 +31,15 @@ export const LoginPage = () => {
       showToast('Has iniciado sesión en Fayver', 'success')
       // El useEffect se encargará de la redirección cuando user se actualice
     } catch (error) {
-      // Si el login sale mal. Envia un console.log con el error y un alert.
       console.log('ERROR DETALLADO: ', error.response?.data)
-      // Capturamos si es un error de formato de Zod o un mensaje plano del servidor
       const backendError = error.response?.data
+
       if (backendError?.error) {
-        // Si Zod nos devuelve errores por campos independientes:
-        const messages = Object.values(backendError.error).flat().join(', ')
-        showToast(`Datos inválidos: ${messages}`, 'error')
+        // Mapeado directo de Zod
+        const zodMessages = Object.values(backendError.error).flat().join(' ')
+        showToast(zodMessages, 'error')
       } else {
+        // Si las credenciales no coinciden en la base de datos ("Contraseña incorrecta", etc.)
         showToast(backendError?.message || 'Error al entrar', 'error')
       }
     } finally {

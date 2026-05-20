@@ -27,20 +27,16 @@ export const RegisterPage = () => {
       // Redirige al login después del registro exitoso
       navigate('/login')
     } catch (error) {
-      // Si el registro sale mal, envia un console.log con el error y un alert
       console.log('ERROR DETALLADO: ', error.response?.data)
-      //  Muestra exactamente qué falló (Zod o alertas de base de datos)
       const backendError = error.response?.data
 
       if (backendError?.error) {
-        // Si Zod detecta problemas específicos de validación (ej. Contraseña corta o email inválido)
-        // Recorremos los errores por campo y los unimos de forma legible
-        const messages = Object.entries(backendError.error)
-          .map(([field, errs]) => `${field}: ${errs.join(', ')}`)
-          .join(' | ')
-        showToast(`Requisitos incumplidos: ${messages}`, 'error')
+        // Mapeado directo de Zod
+        // Extraemos solo los mensajes de error del array de Zod y los unimos con espacios
+        const zodMessages = Object.values(backendError.error).flat().join(' ')
+        showToast(zodMessages, 'error')
       } else {
-        // Errores manuales controlados ("El usuario ya está registrado", etc.)
+        // Si es un error manual de la base de datos (Ej: "El usuario ya está registrado")
         showToast(backendError?.message || 'Error al registrarse', 'error')
       }
     } finally {
