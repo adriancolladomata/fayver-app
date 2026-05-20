@@ -31,3 +31,11 @@ export const updateTaskReq = async (boardId, listId, taskId, data) => {
   )
   return response.data
 }
+
+export const updateTasksOrderReq = async (boardId, listId, tasksArray) => {
+  const response = await axiosInstance.patch(
+    `${API_BASE_URL}/${boardId}/lists/${listId}/tasks/action/reorder`,
+    tasksArray
+  )
+  return response.data
+}

@@ -53,7 +53,11 @@ const BoardPageContent = () => {
   const handleDragEnd = async (event) => {
     const { active, over } = event
 
-    if (!over || active.id === over.id) return // Si se suelta en la misma posición, no hacemos nada
+    if (!over || active.id === over.id) return
+
+    // VALIDACIÓN DE SEGURIDAD: Si el elemento arrastrado no pertenece a las listas, lo ignoramos
+    const isAList = localLists.some((list) => list.id === active.id)
+    if (!isAList) return
 
     // Calculamos el nuevo orden en el cliente (Optimistic UI)
     const oldIndex = localLists.findIndex((list) => list.id === active.id)

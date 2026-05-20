@@ -1,11 +1,88 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CreateTaskModal } from './CreateTaskModal'
 import { ListSettingsModal } from './ListSettingsModal'
 import { TaskDetailsModal } from './TaskDetailsModal'
 import { useLists } from '../context/ListContext'
 import { useTasks } from '../hooks/useTasks'
-import { useSortable } from '@dnd-kit/sortable'
+import { useSortable, SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
+import { updateTasksOrderReq } from '../services/taskService' // 🟢 Asegúrate de importar el endpoint masivo en tus servicios (puedes añadir la función abajo)
+
+// Componente Envolvedor interno para cada tarjeta de Tarea para que sea Sortable
+const SortableTaskItem = ({ task, onClick, onToggleComplete }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: task.id })
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      onClick={onClick}
+      className='bg-gray-50 p-3 rounded border border-gray-200 hover:shadow-md transition-shadow flex items-start gap-2 cursor-pointer select-none'
+    >
+      {/* Indicador visual para arrastrar (Se lleva los listeners y attributes) */}
+      <div
+        {...attributes}
+        {...listeners}
+        className='cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 p-0.5 mt-0.5 font-bold text-xs tracking-tighter'
+        title='Arrastrar tarea'
+        onClick={(e) => e.stopPropagation()} // Evita que abra el modal al arrastrar
+      >
+        ⋮⋮
+      </div>
+
+      <input
+        type='checkbox'
+        checked={!!task.is_completed}
+        onClick={(e) => e.stopPropagation()}
+        onChange={onToggleComplete}
+        className='mt-1 cursor-pointer accent-green-600 h-4 w-4 rounded flex-shrink-0'
+      />
+
+      <div className='flex-1 min-w-0'>
+        <div className='space-y-1'>
+          <p className={`text-sm font-medium transition-all break-words ${
+            task.is_completed ? 'line-through text-gray-400 font-normal' : 'text-gray-800'
+          }`}>
+            {task.name}
+          </p>
+          {task.color && task.color !== '#ffffff' && (
+            <span className='block h-1 w-full rounded-full' style={{ backgroundColor: task.color }} />
+          )}
+          {task.label && task.label.trim() ? (
+            <div className='flex flex-wrap gap-1.5 mt-2'>
+              {task.label.split(',').map((tag, index) => {
+                const cleanTag = tag.trim()
+                if (!cleanTag) return null
+                return (
+                  <span
+                    key={`${cleanTag}-${index}`}
+                    className='text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200/60'
+                  >
+                    {cleanTag}
+                  </span>
+                )
+              })}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export const ListColumn = ({ list, boardId }) => {
   const [showTaskModal, setShowTaskModal] = useState(false)
@@ -14,26 +91,68 @@ export const ListColumn = ({ list, boardId }) => {
   const { lists } = useLists()
   const { deleteTask, updateTask } = useTasks(boardId)
 
-  // Inicializar dnd-kit para esta columna
+  // ESTADO LOCAL DE TAREAS PARA OPTIMISTIC UI
+  const [localTasks, setLocalTasks] = useState([])
+
+  useEffect(() => {
+    if (list.tasks) {
+      setLocalTasks(list.tasks)
+    }
+  }, [list.tasks])
+
+  // Inicializar dnd-kit para la LISTA/COLUMNA misma
   const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
+    attributes: listAttributes,
+    listeners: listListeners,
+    setNodeRef: setListRef,
+    transform: listTransform,
+    transition: listTransition,
+    isDragging: isListDragging
   } = useSortable({ id: list.id })
 
-  // Estilos mientras se arrastra
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1, // Se vuelve transparente al levantarla
+  const listStyle = {
+    transform: CSS.Translate.toString(listTransform),
+    transition: listTransition,
+    opacity: isListDragging ? 0.4 : 1,
+  }
+
+  // Configuración de sensores para las tareas
+  const taskSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 }
+    })
+  )
+
+  // MANEJADOR DEL ARRASTRE DE TAREAS INTERNAS
+  const handleTaskDragEnd = async (event) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const oldIndex = localTasks.findIndex(t => t.id === active.id)
+    const newIndex = localTasks.findIndex(t => t.id === over.id)
+    const newTasksOrder = arrayMove(localTasks, oldIndex, newIndex)
+
+    // Actualización inmediata del UI
+    setLocalTasks(newTasksOrder)
+
+    // Formatear payload para el backend de Zod: [{ id, order }]
+    const payload = newTasksOrder.map((task, index) => ({
+      id: task.id,
+      order: index
+    }))
+
+    try {
+      // Usamos el servicio de tareas apuntando al endpoint masivo
+      await updateTasksOrderReq(boardId, list.id, payload)
+      console.log('¡Orden de tareas guardado en base de datos!')
+    } catch (error) {
+      console.error('Error al reordenar tareas:', error)
+      setLocalTasks(list.tasks) // Revertir si hay error de red/servidor
+    }
   }
 
   const handleToggleComplete = async (taskId, currentStatus) => {
     try {
-      // Mandamos el inverso del booleano (mysql2 mapeará true/false a 1/0 automáticamente)
       await updateTask(list.id, taskId, { is_completed: !currentStatus })
     } catch (error) {
       console.error('Error al cambiar estado de la tarea:', error)
@@ -42,26 +161,21 @@ export const ListColumn = ({ list, boardId }) => {
 
   return (
     <>
-      {/* DIV PRINCIPAL: REF Y ESTILOS DE MOVIMIENTO */}
       <div
-        ref={setNodeRef}
-        style={style}
+        ref={setListRef}
+        style={listStyle}
         className='bg-white rounded-lg shadow p-4 w-80 flex-shrink-0 flex flex-col'
       >
         <div className='flex justify-between items-center mb-4'>
-
-          {/* CABECERA: ACTÚA COMO EL ÁREA PARA AGARRAR (GRAB) */}
+          {/* CABECERA DE LA COLUMNA (Arrastre de listas) */}
           <h3
-            {...attributes}
-            {...listeners}
-            className='font-bold text-gray-800 text-lg flex items-center gap-2 flex-1 cursor-grab active:cursor-grabbing'
+            {...listAttributes}
+            {...listListeners}
+            className='font-bold text-gray-800 text-lg flex items-center gap-2 flex-1 cursor-grab active:cursor-grabbing select-none'
             title='Mantén presionado para mover la lista'
           >
             {list.color && list.color !== '#ffffff' && (
-              <div
-                className='w-3 h-3 rounded-full'
-                style={{ backgroundColor: list.color }}
-              ></div>
+              <div className='w-3 h-3 rounded-full' style={{ backgroundColor: list.color }}></div>
             )}
             {list.name}
           </h3>
@@ -75,60 +189,24 @@ export const ListColumn = ({ list, boardId }) => {
           </button>
         </div>
 
-        {/* ... (Todo el bloque de list.tasks que ya tienes se queda EXACTAMENTE IGUAL) ... */}
-
-        <div className='space-y-2 mb-4 max-h-96 overflow-y-auto'>
-          {list.tasks && list.tasks.length > 0 ? (
-            list.tasks.map((task) => (
-              <div
-                key={task.id}
-                onClick={() => setActiveTask(task)}
-                className='bg-gray-50 p-3 rounded border border-gray-200 hover:shadow-md transition-shadow flex justify-between items-start gap-2 cursor-pointer'
-              >
-                <input
-                  type='checkbox'
-                  checked={!!task.is_completed}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={() => handleToggleComplete(task.id, task.is_completed)}
-                  className='mt-1 cursor-pointer accent-green-600 h-4 w-4 rounded'
-                />
-
-                <div className='flex-1'>
-                  <div className='space-y-1'>
-                    <p className={`text-sm font-medium transition-all ${
-                      task.is_completed ? 'line-through text-gray-400 font-normal' : 'text-gray-800'
-                    }`}>
-                      {task.name}
-                    </p>
-                    {task.color && task.color !== '#ffffff' && (
-                      <span
-                        className='block h-1 w-full rounded-full'
-                        style={{ backgroundColor: task.color }}
-                      />
-                    )}
-                    {task.label && task.label.trim() ? (
-                      <div className='flex flex-wrap gap-1.5 mt-2'>
-                        {task.label.split(',').map((tag, index) => {
-                          const cleanTag = tag.trim()
-                          if (!cleanTag) return null
-                          return (
-                            <span
-                              key={`${cleanTag}-${index}`}
-                              className='text-[11px] font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200/60'
-                            >
-                              {cleanTag}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className='text-gray-400 text-sm text-center py-4'>Sin tareas</p>
-          )}
+        {/* ZONA DE TAREAS: ENCAPSULADA CON SU PROPIO CONTEXTO DND */}
+        <div className='space-y-2 mb-4 max-h-96 overflow-y-auto custom-scrollbar'>
+          <DndContext sensors={taskSensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
+            <SortableContext items={localTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+              {localTasks.length > 0 ? (
+                localTasks.map((task) => (
+                  <SortableTaskItem
+                    key={task.id}
+                    task={task}
+                    onClick={() => setActiveTask(task)}
+                    onToggleComplete={() => handleToggleComplete(task.id, task.is_completed)}
+                  />
+                ))
+              ) : (
+                <p className='text-gray-400 text-sm text-center py-4'>Sin tareas</p>
+              )}
+            </SortableContext>
+          </DndContext>
         </div>
 
         <button
@@ -139,28 +217,9 @@ export const ListColumn = ({ list, boardId }) => {
         </button>
       </div>
 
-      <CreateTaskModal
-        listId={list.id}
-        isOpen={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
-      />
-
-      <TaskDetailsModal
-        isOpen={!!activeTask}
-        onClose={() => setActiveTask(null)}
-        task={activeTask}
-        boardId={boardId}
-        listId={list.id}
-        tasks={list.tasks}
-      />
-
-      <ListSettingsModal
-        isOpen={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        list={list}
-        boardId={boardId}
-        allLists={lists}
-      />
+      <CreateTaskModal listId={list.id} isOpen={showTaskModal} onClose={() => setShowTaskModal(false)} />
+      <TaskDetailsModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} task={activeTask} boardId={boardId} listId={list.id} tasks={list.tasks} />
+      <ListSettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} list={list} boardId={boardId} allLists={lists} />
     </>
   )
 }
