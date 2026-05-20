@@ -6,21 +6,35 @@ import { useLists } from '../context/ListContext'
 export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
   const [structuredData, setStructuredData] = useState([])
   const [expandedLists, setExpandedLists] = useState({})
+  const [loading, setLoading] = useState(false)
 
   const { requireConfirm } = useConfirmation()
   const { loadLists } = useLists()
 
   const fetchArchivedStructure = async () => {
+    if (!boardId) return // Seguridad por si no hay tablón cargado
+
     try {
+      setLoading(true)
       const data = await getArchivedTreeReq(boardId)
       setStructuredData(data)
     } catch (error) {
       console.error('Error cargando estructura de archivados:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (isOpen) fetchArchivedStructure()
+    if (isOpen && boardId) {
+      fetchArchivedStructure()
+    }
+
+    // ESTA ES LA CLAVE: Cuando el modal se cierra o cambias de tablón, limpiamos los estados inmediatamente para que empiece desde cero.
+    return () => {
+      setStructuredData([])
+      setExpandedLists({})
+    }
   }, [isOpen, boardId])
 
   if (!isOpen) return null
@@ -66,10 +80,10 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
         {/* Cabecera */}
         <div className='bg-gradient-to-r from-blue-700 to-blue-500 p-4 text-white flex justify-between items-center shadow-md'>
           <div>
-            <h2 className='text-lg font-bold flex items-center gap-2'>
+            <h2 className='text-xl font-bold flex items-center gap-2'>
               Elementos Archivados
             </h2>
-            <p className='text-blue-100 text-xs mt-0.5'>Gestiona las listas archivadas de tu tablón</p>
+            <p className='text-blue-100 text-sm mt-0.5'>Gestiona las listas archivadas de tu tablón</p>
           </div>
           <button onClick={onClose} className='text-blue-100 hover:text-white font-bold p-1 transition-colors cursor-pointer text-lg'>✕</button>
         </div>
@@ -97,15 +111,15 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
                       <span className='text-sm font-semibold truncate text-blue-900'>
                         {list.name}
                       </span>
-                      <span className='text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full border border-blue-200'>
+                      <span className='text-[11px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full border border-blue-200'>
                         Lista archivada
                       </span>
                     </div>
 
                     {/* Acciones de la Lista */}
                     <div className='flex items-center gap-3' onClick={e => e.stopPropagation()}>
-                      <button onClick={() => handleRestoreList(list.id)} className='text-xs text-emerald-600 hover:text-emerald-700 font-bold cursor-pointer transition-colors'>Restaurar</button>
-                      <button onClick={() => handleSoftDeleteList(list.id)} className='text-xs text-rose-500 hover:text-rose-700 font-bold cursor-pointer transition-colors'>Eliminar</button>
+                      <button onClick={() => handleRestoreList(list.id)} className='text-sm text-emerald-600 hover:text-emerald-700 font-bold cursor-pointer transition-colors'>Restaurar</button>
+                      <button onClick={() => handleSoftDeleteList(list.id)} className='text-sm text-rose-500 hover:text-rose-700 font-bold cursor-pointer transition-colors'>Eliminar</button>
                     </div>
                   </div>
 
@@ -116,9 +130,6 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
                         tasksToShow.map(task => (
                           <div key={task.id} className='bg-white p-3 rounded-md border border-neutral-200/80 shadow-sm flex justify-between items-center gap-4 text-sm'>
                             <span className='text-neutral-600 font-medium break-words min-w-0 flex-1'>{task.name}</span>
-                            <span className='text-[10px] bg-neutral-100 text-neutral-400 font-medium px-2 py-0.5 rounded-full border border-neutral-200'>
-                              Heredado
-                            </span>
                           </div>
                         ))
                       ) : (
