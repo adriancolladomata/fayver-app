@@ -33,7 +33,15 @@ export const LoginPage = () => {
     } catch (error) {
       // Si el login sale mal. Envia un console.log con el error y un alert.
       console.log('ERROR DETALLADO: ', error.response?.data)
-      showToast(error.response?.data?.message || 'Error al entrar', 'error')
+      // Capturamos si es un error de formato de Zod o un mensaje plano del servidor
+      const backendError = error.response?.data
+      if (backendError?.error) {
+        // Si Zod nos devuelve errores por campos independientes:
+        const messages = Object.values(backendError.error).flat().join(', ')
+        showToast(`Datos inválidos: ${messages}`, 'error')
+      } else {
+        showToast(backendError?.message || 'Error al entrar', 'error')
+      }
     } finally {
       setIsLoading(false)
     }

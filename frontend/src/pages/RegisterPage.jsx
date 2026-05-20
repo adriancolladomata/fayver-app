@@ -29,7 +29,20 @@ export const RegisterPage = () => {
     } catch (error) {
       // Si el registro sale mal, envia un console.log con el error y un alert
       console.log('ERROR DETALLADO: ', error.response?.data)
-      showToast(error.response?.data?.message || 'Error al registrarse', 'error')
+      //  Muestra exactamente qué falló (Zod o alertas de base de datos)
+      const backendError = error.response?.data
+
+      if (backendError?.error) {
+        // Si Zod detecta problemas específicos de validación (ej. Contraseña corta o email inválido)
+        // Recorremos los errores por campo y los unimos de forma legible
+        const messages = Object.entries(backendError.error)
+          .map(([field, errs]) => `${field}: ${errs.join(', ')}`)
+          .join(' | ')
+        showToast(`Requisitos incumplidos: ${messages}`, 'error')
+      } else {
+        // Errores manuales controlados ("El usuario ya está registrado", etc.)
+        showToast(backendError?.message || 'Error al registrarse', 'error')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -53,7 +66,7 @@ export const RegisterPage = () => {
         <div className='bg-white p-8 rounded-2xl shadow-sm border border-neutral-200/60'>
           <div className='mb-6'>
             <h2 className='text-xl font-bold text-neutral-800'>Crear cuenta</h2>
-            <p className='text-neutral-500 text-sm'>Únete a la mejor gestión de tablones</p>
+            <p className='text-neutral-500 text-sm'>Únete al mejor gestor de tareas</p>
           </div>
 
           <form onSubmit={handleSubmit} className='space-y-5'>
@@ -94,6 +107,9 @@ export const RegisterPage = () => {
                 required
                 className='w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 focus:bg-white transition-all'
               />
+              <p className='mt-1.5 ml-1 text-[11px] text-neutral-400 font-medium leading-normal'>
+                Mínimo 8 caracteres con al menos una mayúscula, una minúscula y un carácter especial (@, $, !, %, *).
+              </p>
             </div>
 
             {/* Confirmar Contraseña */}
