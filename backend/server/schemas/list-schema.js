@@ -17,7 +17,10 @@ const listSchema = z.object({
   is_showed: z.number().int().min(0).max(1).default(1),
 
   // Validamos order como un entero que empieza en 0
-  order: z.number().int().min(0, 'El orden no puede ser negativo').optional()
+  order: z.number().int().min(0, 'El orden no puede ser negativo').optional(),
+
+  // Validamos is_archived como un booleano opcional
+  is_archived: z.boolean().optional()
 })
 
 const reorderSchema = z.array(

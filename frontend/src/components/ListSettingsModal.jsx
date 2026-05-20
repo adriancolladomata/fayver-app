@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLists } from '../context/ListContext'
+import { useToast } from '../context/ToastContext'
 
 export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) => {
   const [currentTab, setCurrentTab] = useState('main') // main, rename, move, color, delete
@@ -8,6 +9,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
   const { updateList, reorderLists, deleteList } = useLists()
+  const { showToast } = useToast()
 
   useEffect(() => {
     if (isOpen && list) {
@@ -125,6 +127,20 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
     }
   }
 
+  const handleArchiveList = async () => {
+    try {
+      setLoading(true)
+      await updateList(list.id, { is_archived: true })
+      showToast('Lista archivada correctamente', 'success') // Si tienes acceso a showToast
+      onClose()
+    } catch (error) {
+      console.error('Error al archivar lista:', error)
+      setMessage({ type: 'error', text: 'No se pudo archivar la lista' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const closeModal = () => {
     setCurrentTab('main')
     setNewName(list?.name || '')
@@ -169,6 +185,14 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
                 disabled={loading}
               >
                 <span>Cambiar color</span>
+              </button>
+
+              <button
+                onClick={handleArchiveList}
+                className='w-full text-left px-4 py-3 rounded-lg bg-amber-50 hover:bg-amber-100 transition-colors font-medium text-amber-700 flex items-center gap-3 cursor-pointer'
+                disabled={loading}
+              >
+                <span>Archivar lista</span>
               </button>
 
               <button

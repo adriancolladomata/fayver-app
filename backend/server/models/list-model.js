@@ -27,14 +27,15 @@ export class ListModel {
 
   // Al ponerlo como objeto, no importa el orden en el que se introduzcan los datos, ideal para actualizaciones parciales,
   // como esta, que incluyen varios datos que se pueden actualizar.
-  static async modifyList (id, board_id, { name, isShowed, order, color }) {
+  static async modifyList (id, board_id, { name, isShowed, order, color, is_archived }) {
     const [result] = await db.query(`UPDATE lists SET 
       name = COALESCE(?, name),
       color = COALESCE(?, color),
       \`order\` = COALESCE(?, \`order\`),
-      is_showed = COALESCE(?, is_showed)
+      is_showed = COALESCE(?, is_showed),
+      is_archived = COALESCE(?, is_archived)
       WHERE id = ? AND board_id = ? AND deleted_at IS NULL`,
-    [name ?? null, color ?? null, order ?? null, isShowed ?? null, id, board_id]
+    [name ?? null, color ?? null, order ?? null, isShowed ?? null, is_archived  ?? null, id, board_id]
     )
 
     return result
@@ -98,4 +99,24 @@ export class ListModel {
     return result
   }
 
+  static async getArchivedTree (boardId) {
+  // Traemos las listas y sus tareas asociadas si la lista está archivada O la tarea está archivada
+    const query = `
+      SELECT 
+        l.id AS list_id, 
+        l.name AS list_name, 
+        l.is_archived AS list_is_archived,
+        t.id AS task_id, 
+        t.name AS task_name, 
+        t.is_archived AS task_is_archived
+      FROM lists l
+      LEFT JOIN tasks t ON l.id = t.list_id AND t.deleted_at IS NULL
+      WHERE l.board_id = ? 
+        AND l.deleted_at IS NULL
+        AND (l.is_archived = 1 OR t.is_archived = 1)
+      ORDER BY l.\`order\` ASC, t.\`order\` ASC
+    `
+    const [rows] = await db.query(query, [boardId])
+    return rows
+  }
 }

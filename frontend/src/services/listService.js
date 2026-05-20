@@ -69,3 +69,13 @@ export const deleteListReq = async (boardId, listId) => {
     throw error.response?.data || error
   }
 }
+
+export const getArchivedTreeReq = async (boardId) => {
+  try {
+    const response = await axiosInstance.get(`${API_BASE_URL}/${boardId}/lists/action/archived`)
+    return response.data
+  } catch (error) {
+    console.error('Error en getArchivedTreeReq:', error.response?.data || error.message)
+    throw error.response?.data || error
+  }
+}

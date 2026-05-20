@@ -41,7 +41,10 @@ const taskSchema = z.object({
   order: z.number()
     .int()
     .min(0, 'El orden no puede ser negativo')
-    .optional()
+    .optional(),
+
+  // Validamos is_archived como un booleano opcional
+  is_archived: z.boolean().optional()
 })
 
 // Esquema para el reordenamiento (Drag & Drop). Sigue el mismo patrón que el list-schema
