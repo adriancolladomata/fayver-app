@@ -94,7 +94,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
                   <div
                     onClick={() => toggleList(list.id)}
                     className={`p-3.5 flex justify-between items-center cursor-pointer transition-colors select-none ${
-                      list.is_archived ? 'bg-amber-50/60 hover:bg-amber-100/60' : 'hover:bg-neutral-50'
+                      list.is_archived ? 'bg-gradient-to-r from-blue-500 to-blue-300 hover:from-blue-600 hover:to-blue-400' : 'hover:bg-neutral-50'
                     }`}
                   >
                     <div className='flex items-center gap-2 min-w-0'>

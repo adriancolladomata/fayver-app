@@ -105,12 +105,12 @@ const BoardPageContent = () => {
           {/* Botón de Elementos Archivados integrado estéticamente */}
           <button
             onClick={() => setShowArchiveModal(true)}
-            className='px-4 py-2 bg-amber-50 border border-amber-200 text-amber-800 font-medium rounded-lg hover:bg-amber-100 transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
+            className='px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-300 hover:from-blue-600 hover:to-blue-400 font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
           >
             <img
               src="../SVG Show SideBar.svg"
               alt="Ocultar barra lateral"
-              className="w-4 h-4 invert opacity-90 group-hover:opacity-100 transition-opacity"
+              className="w-4 h-4 opacity-90 group-hover:opacity-100 transition-opacity"
             />
           </button>
 
