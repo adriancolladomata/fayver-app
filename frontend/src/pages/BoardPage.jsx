@@ -108,9 +108,9 @@ const BoardPageContent = () => {
             className='px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
           >
             <img
-              src="../SVG Show SideBar.svg"
+              src="../SVG Archive Icon.svg"
               alt="Ocultar barra lateral"
-              className="w-4 h-4 opacity-90 group-hover:opacity-100 transition-opacity"
+              className="w-5 h-5 opacity-90 group-hover:opacity-100 invert transition-opacity"
             />
           </button>
 
@@ -154,7 +154,7 @@ const BoardPageContent = () => {
         onClose={() => setShowListModal(false)}
       />
 
-      {/* 📦 4. Inyección del Modal de Archivados */}
+      {/* Inyección del Modal de Archivados */}
       <ArchivedElementsModal
         isOpen={showArchiveModal}
         onClose={() => setShowArchiveModal(false)}
