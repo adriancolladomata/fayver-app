@@ -105,7 +105,7 @@ const BoardPageContent = () => {
           {/* Botón de Elementos Archivados integrado estéticamente */}
           <button
             onClick={() => setShowArchiveModal(true)}
-            className='px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-300 hover:from-blue-600 hover:to-blue-400 font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
+            className='px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
           >
             <img
               src="../SVG Show SideBar.svg"

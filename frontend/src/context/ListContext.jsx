@@ -102,9 +102,15 @@ export const ListProvider = ({ children, boardId }) => {
   const updateList = useCallback(async (listId, data) => {
     try {
       const response = await updateListReq(boardId, listId, data)
-      setLists(prevLists => prevLists.map(list =>
-        list.id === listId ? { ...list, ...data } : list
-      ))
+      // SSi el cambio es archivar, la detectamos y filtramos al instante para actualizar
+      if (data && data.is_archived === true) {
+        setLists(prevLists => prevLists.filter(list => list.id !== listId))
+      } else {
+      // Para cualquier otro cambio (como el color o el nombre), mantiene tu lógica actual en memoria
+        setLists(prevLists => prevLists.map(list =>
+          list.id === listId ? { ...list, ...data } : list
+        ))
+      }
       return response
     } catch (err) {
       console.error('Error al actualizar la lista:', err)

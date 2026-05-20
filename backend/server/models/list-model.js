@@ -108,12 +108,11 @@ export class ListModel {
         l.is_archived AS list_is_archived,
         t.id AS task_id, 
         t.name AS task_name, 
-        t.is_archived AS task_is_archived
       FROM lists l
       LEFT JOIN tasks t ON l.id = t.list_id AND t.deleted_at IS NULL
       WHERE l.board_id = ? 
         AND l.deleted_at IS NULL
-        AND (l.is_archived = 1 OR t.is_archived = 1)
+        AND l.is_archived = 1
       ORDER BY l.\`order\` ASC, t.\`order\` ASC
     `
     const [rows] = await db.query(query, [boardId])

@@ -111,28 +111,6 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     }
   }
 
-  const handleArchive = async () => {
-    const hasConfirmed = await requireConfirm(
-      '¿Archivar esta tarea?',
-      `La tarea "${task.name}" se ocultará del tablero (Podrás encontrarla en 'Elementos archivados)'`
-    )
-
-    if (!hasConfirmed) return
-
-    try {
-      setLoading(true)
-      // Usamos updateTask pasando solo el flag de archivado
-      await updateTask(listId, task.id, { is_archived: true })
-      showToast('Tarea archivada con éxito', 'success')
-      onClose()
-    } catch (error) {
-      console.error('Error al archivar tarea:', error)
-      showToast('No se pudo archivar la tarea', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleClose = () => {
     onClose()
   }
@@ -253,14 +231,6 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
               disabled={loading}
             >
               Eliminar tarea
-            </button>
-            <button
-              type='button'
-              onClick={handleArchive}
-              className='px-4 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50'
-              disabled={loading}
-            >
-              Archivar
             </button>
             <div className='flex flex-col gap-3 sm:flex-row'>
               <button

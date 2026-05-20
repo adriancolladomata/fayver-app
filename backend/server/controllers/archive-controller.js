@@ -27,8 +27,7 @@ export const getArchivedElements = async (req, res) => {
         listsMap.get(row.list_id).tasks.push({
           id: row.task_id,
           list_id: row.list_id,
-          name: row.task_name,
-          is_archived: Boolean(row.task_is_archived)
+          name: row.task_name
         })
       }
     }
