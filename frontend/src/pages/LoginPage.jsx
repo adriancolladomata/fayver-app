@@ -36,7 +36,7 @@ export const LoginPage = () => {
 
       if (backendError?.error) {
         // Mapeado directo de Zod
-        const zodMessages = Object.values(backendError.error).flat().join(' ')
+        const zodMessages = Object.values(backendError.error).flat().join(' • ')
         showToast(zodMessages, 'error')
       } else {
         // Si las credenciales no coinciden en la base de datos ("Contraseña incorrecta", etc.)

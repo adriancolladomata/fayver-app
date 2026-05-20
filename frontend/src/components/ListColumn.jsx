@@ -4,6 +4,8 @@ import { ListSettingsModal } from './ListSettingsModal'
 import { TaskDetailsModal } from './TaskDetailsModal'
 import { useLists } from '../context/ListContext'
 import { useTasks } from '../hooks/useTasks'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 export const ListColumn = ({ list, boardId }) => {
   const [showTaskModal, setShowTaskModal] = useState(false)
@@ -11,6 +13,23 @@ export const ListColumn = ({ list, boardId }) => {
   const [activeTask, setActiveTask] = useState(null)
   const { lists } = useLists()
   const { deleteTask, updateTask } = useTasks(boardId)
+
+  // Inicializar dnd-kit para esta columna
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: list.id })
+
+  // Estilos mientras se arrastra
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1, // Se vuelve transparente al levantarla
+  }
 
   const handleToggleComplete = async (taskId, currentStatus) => {
     try {
@@ -23,9 +42,21 @@ export const ListColumn = ({ list, boardId }) => {
 
   return (
     <>
-      <div className='bg-white rounded-lg shadow p-4 w-80 flex-shrink-0'>
+      {/* DIV PRINCIPAL: REF Y ESTILOS DE MOVIMIENTO */}
+      <div
+        ref={setNodeRef}
+        style={style}
+        className='bg-white rounded-lg shadow p-4 w-80 flex-shrink-0 flex flex-col'
+      >
         <div className='flex justify-between items-center mb-4'>
-          <h3 className='font-bold text-gray-800 text-lg flex items-center gap-2'>
+
+          {/* CABECERA: ACTÚA COMO EL ÁREA PARA AGARRAR (GRAB) */}
+          <h3
+            {...attributes}
+            {...listeners}
+            className='font-bold text-gray-800 text-lg flex items-center gap-2 flex-1 cursor-grab active:cursor-grabbing'
+            title='Mantén presionado para mover la lista'
+          >
             {list.color && list.color !== '#ffffff' && (
               <div
                 className='w-3 h-3 rounded-full'
@@ -34,15 +65,17 @@ export const ListColumn = ({ list, boardId }) => {
             )}
             {list.name}
           </h3>
+
           <button
             onClick={() => setShowSettingsModal(true)}
             className='w-5 h-5 text-gray-600 hover:text-gray-900 transition-colors cursor-pointer flex items-center justify-center'
             title='Configurar lista'
-            alt='Botón de configuración de la lista'
           >
             <img src='../SVGDotsVertical.svg' alt='Icono tres puntos' className='w-5 h-5' />
           </button>
         </div>
+
+        {/* ... (Todo el bloque de list.tasks que ya tienes se queda EXACTAMENTE IGUAL) ... */}
 
         <div className='space-y-2 mb-4 max-h-96 overflow-y-auto'>
           {list.tasks && list.tasks.length > 0 ? (
@@ -52,7 +85,6 @@ export const ListColumn = ({ list, boardId }) => {
                 onClick={() => setActiveTask(task)}
                 className='bg-gray-50 p-3 rounded border border-gray-200 hover:shadow-md transition-shadow flex justify-between items-start gap-2 cursor-pointer'
               >
-                {/* Checkbox para completar tarea */}
                 <input
                   type='checkbox'
                   checked={!!task.is_completed}
@@ -63,7 +95,6 @@ export const ListColumn = ({ list, boardId }) => {
 
                 <div className='flex-1'>
                   <div className='space-y-1'>
-                    {/* Si está completada se tacha el texto de forma dinámica */}
                     <p className={`text-sm font-medium transition-all ${
                       task.is_completed ? 'line-through text-gray-400 font-normal' : 'text-gray-800'
                     }`}>
@@ -79,9 +110,7 @@ export const ListColumn = ({ list, boardId }) => {
                       <div className='flex flex-wrap gap-1.5 mt-2'>
                         {task.label.split(',').map((tag, index) => {
                           const cleanTag = tag.trim()
-                          // Si el usuario puso comas de más (ej: "Urgente,, Frontend"), ignoramos los espacios vacíos
                           if (!cleanTag) return null
-
                           return (
                             <span
                               key={`${cleanTag}-${index}`}

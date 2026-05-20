@@ -33,7 +33,7 @@ export const RegisterPage = () => {
       if (backendError?.error) {
         // Mapeado directo de Zod
         // Extraemos solo los mensajes de error del array de Zod y los unimos con espacios
-        const zodMessages = Object.values(backendError.error).flat().join(' ')
+        const zodMessages = Object.values(backendError.error).flat().join(' • ')
         showToast(zodMessages, 'error')
       } else {
         // Si es un error manual de la base de datos (Ej: "El usuario ya está registrado")

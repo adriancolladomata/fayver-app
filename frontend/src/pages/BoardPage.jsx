@@ -4,6 +4,9 @@ import { ListColumn } from '../components/ListColumn'
 import { CreateListModal } from '../components/CreateListModal'
 import { ListProvider, useLists } from '../context/ListContext'
 import { useBoards } from '../context/BoardContext'
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
+import { reorderListsReq } from '../services/listService'
 
 const BoardPageContent = () => {
   const { boardId } = useParams()
@@ -12,6 +15,11 @@ const BoardPageContent = () => {
   const [currentBoardInfo, setCurrentBoardInfo] = useState(null)
   const { lists, loading, loadLists } = useLists()
   const { boards, setCurrentBoard } = useBoards()
+  const [localLists, setLocalLists] = useState([])
+
+  useEffect(() => {
+    if (lists) setLocalLists(lists)
+  }, [lists])
 
   useEffect(() => {
     // Buscamos el objeto del tablón actual dentro del array global de boards
@@ -33,6 +41,45 @@ const BoardPageContent = () => {
     loadLists()
   }, [loadLists])
 
+  // Configuración del sensor: Permite clics normales en tareas sin arrastrar
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // El usuario debe arrastrar al menos 5px para activar el modo Drag
+      },
+    })
+  )
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event
+
+    if (!over || active.id === over.id) return // Si se suelta en la misma posición, no hacemos nada
+
+    // Calculamos el nuevo orden en el cliente (Optimistic UI)
+    const oldIndex = localLists.findIndex((list) => list.id === active.id)
+    const newIndex = localLists.findIndex((list) => list.id === over.id)
+    const newOrder = arrayMove(localLists, oldIndex, newIndex)
+
+    // Modificamos el estado visual de inmediato para que sea instantáneo
+    setLocalLists(newOrder)
+
+    // Formateamos el array con la estructura [{ id, order }] que pide tu validador de Zod
+    const payload = newOrder.map((list, index) => ({
+      id: list.id,
+      order: index
+    }))
+
+    try {
+      // Llamamos a tu servicio nativo de la aplicación
+      await reorderListsReq(boardId, payload)
+      console.log('¡Orden de listas sincronizado en la base de datos!')
+    } catch (error) {
+      console.error('Error al guardar el reordenamiento:', error)
+      // Si el servidor falla (ej. error 500 o de red), revertimos el cambio visual al estado original
+      setLocalLists(lists)
+    }
+  }
+
   if (loading) {
     return <p className='p-10 text-center text-gray-600'>Cargando tablón...</p>
   }
@@ -42,7 +89,7 @@ const BoardPageContent = () => {
       <div className='mb-8 flex justify-between items-center'>
         <div>
           <h1 className='text-3xl font-bold text-gray-800'>{currentBoardInfo ? currentBoardInfo.name : 'Tablón'}</h1>
-          <p className='text-gray-600 mt-2'>{lists.length} lista(s)</p>
+          <p className='text-gray-600 mt-2'>{localLists.length} lista(s)</p>
         </div>
         <button
           onClick={() => navigate('/dashboard')}
@@ -54,9 +101,15 @@ const BoardPageContent = () => {
 
       <div className='overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-gray-300'>
         <div className='flex gap-6 min-w-min'>
-          {lists.map(list => (
-            <ListColumn key={list.id} list={list} boardId={boardId} />
-          ))}
+
+          {/* Envolturuas de dnd aplicadas */}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={localLists.map(l => l.id)} strategy={horizontalListSortingStrategy}>
+              {localLists.map(list => (
+                <ListColumn key={list.id} list={list} boardId={boardId} />
+              ))}
+            </SortableContext>
+          </DndContext>
 
           <div className='flex-shrink-0 w-80'>
             <button
