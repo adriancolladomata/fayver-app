@@ -111,13 +111,16 @@ const BoardPageContent = () => {
             onClick={() => setIsHistoryOpen(!isHistoryOpen)}
             className={`px-3.5 py-2 text-sm font-semibold rounded-lg border transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm ${
               isHistoryOpen
-                ? 'bg-blue-50 text-blue-700 border-blue-200 ring-2 ring-blue-100' 
+                ? 'bg-blue-50 text-blue-700 border-blue-200 ring-2 ring-blue-100'
                 : 'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50'
             }`}
             title="Ver historial de cambios"
           >
-            <span>⏱️</span>
-            <span className='hidden sm:inline'>Historial</span>
+            <img
+              src="../SVG Stopwatch.svg"
+              alt="Ocultar barra lateral"
+              className="w-5 h-5 opacity-90 group-hover:opacity-100 transition-opacity"
+            />
           </button>
           <button
             onClick={() => setShowArchiveModal(true)}
