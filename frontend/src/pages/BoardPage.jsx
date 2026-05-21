@@ -4,11 +4,11 @@ import { ListColumn } from '../components/ListColumn'
 import { CreateListModal } from '../components/CreateListModal'
 import { ListProvider, useLists } from '../context/ListContext'
 import { useBoards } from '../context/BoardContext'
+import { useActivity } from '../context/ActivityContext'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { reorderListsReq } from '../services/listService'
 import { ArchivedElementsModal } from '../components/ArchivedElementsModal'
-import { ActivitySidebar } from '../components/ActivitySidebar'
 import { getActivityMessage } from '../utils/activityLogs'
 
 const BoardPageContent = () => {
@@ -17,7 +17,8 @@ const BoardPageContent = () => {
   const [showListModal, setShowListModal] = useState(false)
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [currentBoardInfo, setCurrentBoardInfo] = useState(null)
-  const { lists, loading, loadLists, isHistoryOpen, setIsHistoryOpen, logActivity } = useLists()
+  const { lists, loading, loadLists } = useLists()
+  const { logActivity } = useActivity()
   const { boards, setCurrentBoard } = useBoards()
   const [localLists, setLocalLists] = useState([])
 
@@ -85,7 +86,8 @@ const BoardPageContent = () => {
       logActivity(getActivityMessage('LIST_REORDER', {
         draggedName: draggedList.name,
         oldIndex,
-        newIndex
+        newIndex,
+        boardName: currentBoardInfo?.name
       }))
       console.log('¡Orden de listas sincronizado en la base de datos!')
     } catch (error) {
@@ -100,7 +102,7 @@ const BoardPageContent = () => {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50 p-8 transition-all duration-300 ${isHistoryOpen ? 'max-sm:overflow-hidden' : ''}`}>
+    <div className='min-h-screen bg-gray-50 p-8 transition-all duration-300'>
 
       {/* CABECERA DEL TABLERO */}
       <div className='mb-8 flex justify-between items-center'>
@@ -112,21 +114,6 @@ const BoardPageContent = () => {
         {/* Acciones de la cabecera */}
         <div className='flex items-center gap-3'>
           {/* Botón de Elementos Archivados integrado estéticamente */}
-          <button
-            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-            className={`px-3.5 py-2 text-sm font-semibold rounded-lg border transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm ${
-              isHistoryOpen
-                ? 'bg-blue-50 text-blue-700 border-blue-200 ring-2 ring-blue-100'
-                : 'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50'
-            }`}
-            title="Ver historial de cambios"
-          >
-            <img
-              src="../SVG Stopwatch.svg"
-              alt="Ocultar barra lateral"
-              className="w-5 h-5 opacity-90 group-hover:opacity-100 transition-opacity"
-            />
-          </button>
           <button
             onClick={() => setShowArchiveModal(true)}
             className='px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
@@ -184,8 +171,6 @@ const BoardPageContent = () => {
         onClose={() => setShowArchiveModal(false)}
         boardId={boardId}
       />
-
-      <ActivitySidebar />
     </div>
   )
 }

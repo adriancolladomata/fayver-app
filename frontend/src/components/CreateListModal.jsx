@@ -1,12 +1,17 @@
 import { useState } from 'react'
 import { useLists } from '../context/ListContext'
+import { useBoards } from '../context/BoardContext'
+import { useActivity } from '../context/ActivityContext'
+import { getActivityMessage } from '../utils/activityLogs'
 
 export const CreateListModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [color, setColor] = useState('#ffffff')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { createList, logActivity } = useLists()
+  const { createList } = useLists()
+  const { logActivity } = useActivity()
+  const { currentBoard } = useBoards()
 
   const colors = [
     '#ffffff',
@@ -29,8 +34,10 @@ export const CreateListModal = ({ isOpen, onClose }) => {
       setLoading(true)
       setError('')
       await createList(name.trim(), color)
-      logActivity(`Creaste la lista "${name}"`)
-
+      logActivity(getActivityMessage('LIST_CREATE', {
+        name: name.trim(),
+        boardName: currentBoard?.name
+      }))
       setName('')
       setColor('#ffffff')
       setError('')

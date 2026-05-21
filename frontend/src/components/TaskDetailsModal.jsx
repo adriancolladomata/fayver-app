@@ -3,6 +3,8 @@ import { useTasks } from '../hooks/useTasks'
 import { useToast } from '../context/ToastContext'
 import { useConfirmation } from '../context/ConfirmationContext'
 import { useLists } from '../context/ListContext'
+import { useBoards } from '../context/BoardContext'
+import { useActivity } from '../context/ActivityContext'
 import { getActivityMessage } from '../utils/activityLogs'
 
 const colorOptions = [
@@ -26,7 +28,9 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
   const { showToast } = useToast()
   const { requireConfirm } = useConfirmation()
   const { updateTask, deleteTask } = useTasks(boardId)
-  const { logActivity } = useLists()
+  const { lists } = useLists()
+  const { logActivity } = useActivity()
+  const { currentBoard } = useBoards()
 
   useEffect(() => {
     if (!task) return
@@ -80,7 +84,12 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     try {
       setLoading(true)
       await updateTask(listId, task.id, updateData)
-      logActivity(getActivityMessage('TASK_UPDATE', { name: name.trim() }))
+      const currentList = lists.find((item) => item.id === listId)
+      logActivity(getActivityMessage('TASK_UPDATE', {
+        taskName: trimmedName,
+        listName: currentList?.name || '',
+        boardName: currentBoard?.name
+      }))
       showToast('Tarea guardada correctamente.', 'success')
       onClose()
     } catch (error) {
@@ -105,7 +114,12 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     try {
       setLoading(true)
       await deleteTask(listId, task.id)
-      logActivity(getActivityMessage('TASK_DELETE', { name: task.name }))
+      const currentList = lists.find((item) => item.id === listId)
+      logActivity(getActivityMessage('TASK_DELETE', {
+        taskName: task.name,
+        listName: currentList?.name || '',
+        boardName: currentBoard?.name
+      }))
       showToast('Tarea eliminada con éxito', 'success')
       onClose() // 🎯 Cierra el modal de detalles enseguida tras borrar
     } catch (error) {

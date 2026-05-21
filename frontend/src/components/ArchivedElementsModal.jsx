@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { getArchivedTreeReq, updateListReq, deleteListReq } from '../services/listService'
 import { useConfirmation } from '../context/ConfirmationContext'
 import { useLists } from '../context/ListContext'
+import { useActivity } from '../context/ActivityContext'
+import { getActivityMessage } from '../utils/activityLogs'
+import { useBoards } from '../context/BoardContext'
 
 export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
   const [structuredData, setStructuredData] = useState([])
@@ -9,7 +12,9 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
   const [loading, setLoading] = useState(false)
 
   const { requireConfirm } = useConfirmation()
-  const { loadLists, logActivity } = useLists()
+  const { loadLists } = useLists()
+  const { logActivity } = useActivity()
+  const { currentBoard } = useBoards()
 
   const fetchArchivedStructure = async () => {
     if (!boardId) return // Seguridad por si no hay tablón cargado
@@ -50,7 +55,11 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
       await updateListReq(boardId, listId, { is_archived: false })
 
       // Mensaje para el historial de actividad
-      logActivity('Restauraste una lista desde el menú de elementos archivados.')
+      const restoredList = structuredData.find(item => item.id === listId)
+      logActivity(getActivityMessage('LIST_RESTORE', {
+        name: restoredList?.name || 'lista',
+        boardName: currentBoard?.name
+      }))
 
       // 2. Refresca el contenido interno del modal de archivados
       await fetchArchivedStructure()
@@ -73,7 +82,11 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
       await deleteListReq(boardId, listId)
       await fetchArchivedStructure()
       await loadLists()
-      logActivity('Enviaste una lista a la papelera general.')
+      const deletedList = structuredData.find(item => item.id === listId)
+      logActivity(getActivityMessage('LIST_DELETE', {
+        name: deletedList?.name || 'lista',
+        boardName: currentBoard?.name
+      }))
     }
   }
 

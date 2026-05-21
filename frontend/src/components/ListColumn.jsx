@@ -4,6 +4,8 @@ import { ListSettingsModal } from './ListSettingsModal'
 import { TaskDetailsModal } from './TaskDetailsModal'
 import { useLists } from '../context/ListContext'
 import { useTasks } from '../hooks/useTasks'
+import { useBoards } from '../context/BoardContext'
+import { useActivity } from '../context/ActivityContext'
 import { useSortable, SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
@@ -89,8 +91,10 @@ export const ListColumn = ({ list, boardId }) => {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [activeTask, setActiveTask] = useState(null)
-  const { lists, logActivity } = useLists()
+  const { lists } = useLists()
   const { deleteTask, updateTask } = useTasks(boardId)
+  const { logActivity } = useActivity()
+  const { currentBoard } = useBoards()
 
   // ESTADO LOCAL DE TAREAS PARA OPTIMISTIC UI
   const [localTasks, setLocalTasks] = useState([])
@@ -150,7 +154,8 @@ export const ListColumn = ({ list, boardId }) => {
         listName: list.name,
         draggedName: draggedTask.name,
         oldIndex,
-        newIndex
+        newIndex,
+        boardName: currentBoard?.name
       }))
       console.log('¡Orden de tareas guardado en base de datos!')
     } catch (error) {
@@ -166,7 +171,9 @@ export const ListColumn = ({ list, boardId }) => {
       await updateTask(list.id, taskId, { is_completed: !currentStatus })
       logActivity(getActivityMessage('TASK_TOGGLE', {
         taskName: taskName,
-        status: !currentStatus ? 'completada' : 'pendiente'
+        status: !currentStatus ? 'completada' : 'pendiente',
+        listName: list.name,
+        boardName: currentBoard?.name
       }))
     } catch (error) {
       console.error('Error al cambiar estado de la tarea:', error)
@@ -231,7 +238,7 @@ export const ListColumn = ({ list, boardId }) => {
         </button>
       </div>
 
-      <CreateTaskModal listId={list.id} isOpen={showTaskModal} onClose={() => setShowTaskModal(false)} />
+      <CreateTaskModal listId={list.id} boardId={boardId} isOpen={showTaskModal} onClose={() => setShowTaskModal(false)} />
       <TaskDetailsModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} task={activeTask} boardId={boardId} listId={list.id} tasks={list.tasks} />
       <ListSettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} list={list} boardId={boardId} allLists={lists} />
     </>

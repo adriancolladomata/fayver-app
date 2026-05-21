@@ -1,14 +1,18 @@
 import { useState } from 'react'
 import { useTasks } from '../hooks/useTasks'
 import { useLists } from '../context/ListContext'
+import { useBoards } from '../context/BoardContext'
+import { useActivity } from '../context/ActivityContext'
 import { getActivityMessage } from '../utils/activityLogs'
 
-export const CreateTaskModal = ({ listId, isOpen, onClose }) => {
+export const CreateTaskModal = ({ listId, boardId, isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { createTask } = useTasks()
-  const { logActivity } = useLists()
+  const { createTask } = useTasks(boardId)
+  const { lists } = useLists()
+  const { logActivity } = useActivity()
+  const { currentBoard } = useBoards()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -21,7 +25,12 @@ export const CreateTaskModal = ({ listId, isOpen, onClose }) => {
       setLoading(true)
       setError('')
       await createTask(listId, name.trim())
-      logActivity(getActivityMessage('TASK_CREATE', { name: name.trim() }))
+      const currentList = lists.find((item) => item.id === listId)
+      logActivity(getActivityMessage('TASK_CREATE', {
+        taskName: name.trim(),
+        listName: currentList?.name || '',
+        boardName: currentBoard?.name
+      }))
       setName('')
       setError('')
       onClose()

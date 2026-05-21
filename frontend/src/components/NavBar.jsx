@@ -1,12 +1,14 @@
 import { useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useBoards } from '../context/BoardContext'
+import { useActivity } from '../context/ActivityContext'
 
 // Recibimos las propiedades de control de la sidebar desde el Layout padre
 export const NavBar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const { user } = useAuth()
   const { currentBoard } = useBoards()
   const location = useLocation()
+  const { isHistoryOpen, setIsHistoryOpen } = useActivity()
 
   // Extraemos las partes de la URL. Por ejemplo: "/board/123" -> ["board", "123"]
   const pathNames = location.pathname.split('/').filter((x) => x)
@@ -53,15 +55,34 @@ export const NavBar = ({ isSidebarOpen, setIsSidebarOpen }) => {
         {/* Si hay más rutas después del tablero (ej. configuraciones), podrías mapearlas aquí */}
       </div>
 
-      {/* DERECHA: Saludo de usuario */}
-      <div className='flex items-center gap-3'>
-        <p className='text-sm text-gray-600 font-medium'>
-          Bienvenido de nuevo, <strong className='text-blue-600'>{user?.name || 'Usuario'}</strong>
-        </p>
-        {/* Avatar opcional (un círculo con la inicial) */}
-        <div className='w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold'>
-          {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+      {/* DERECHA: Saludo de usuario e historial de actividades */}
+      <div className='flex items-center gap-5'>
+        <button
+          onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+          className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
+            isHistoryOpen
+              ? 'bg-blue-50 text-blue-700 ring-2 ring-blue-100'
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+          }`}
+          title="Ver historial de actividad general"
+        >
+          <img
+            src="../SVG Stopwatch.svg" // Ojo con la ruta, asegúrate de que sea correcta en este nivel
+            alt="Historial"
+            className={`w-5 h-5 transition-opacity ${isHistoryOpen ? 'opacity-100' : 'opacity-70'}`}
+          />
+        </button>
+
+        {/* El saludo de usuario sigue igual */}
+        <div className='flex items-center gap-3 border-l border-gray-200 pl-5'>
+          <p className='text-sm text-gray-600 font-medium'>
+            Bienvenido de nuevo, <strong className='text-blue-600'>{user?.name || 'Usuario'}</strong>
+          </p>
+          <div className='w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold'>
+            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
+          </div>
         </div>
+
       </div>
 
     </nav>

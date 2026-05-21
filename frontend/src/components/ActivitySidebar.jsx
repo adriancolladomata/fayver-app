@@ -1,8 +1,10 @@
+// 📄 src/components/ActivitySidebar.jsx
+
 import { useEffect } from 'react'
-import { useLists } from '../context/ListContext'
+import { useActivity } from '../context/ActivityContext'
 
 export const ActivitySidebar = () => {
-  const { activities, isHistoryOpen, setIsHistoryOpen } = useLists()
+  const { activities, isHistoryOpen, setIsHistoryOpen, clearActivity } = useActivity()
 
   // Cerrar el panel si se pulsa la tecla Escape
   useEffect(() => {
@@ -32,7 +34,7 @@ export const ActivitySidebar = () => {
           /* Margen superior del 4% y separación inferior del suelo */
           top-[4%] bottom-4 
           
-          /* Ancho responsivo: 90% del ancho visible en móvil, 320px fijos en escritorio */
+          /* Ancho responsivo: 85% del ancho visible en móvil, 320px fijos en escritorio */
           w-[85vw] sm:w-80
           
           /* Animación de entrada/salida y control de clics fantasmas */
@@ -40,7 +42,7 @@ export const ActivitySidebar = () => {
         `}
       >
         {/* Cabecera interna */}
-        <div className='flex justify-between items-center pb-3 border-b border-neutral-100'>
+        <div className='flex justify-between items-center pb-3 border-b border-neutral-100 shrink-0'>
           <div>
             <h3 className='font-bold text-neutral-800 text-sm sm:text-base flex items-center gap-2'>
               Historial Reciente
@@ -60,20 +62,40 @@ export const ActivitySidebar = () => {
           {activities.length === 0 ? (
             <div className='text-center py-12 text-neutral-500 space-y-1.5'>
               <p className='text-sm font-semibold'>Tablón sin movimientos</p>
-              <p className='text-[12px] text-neutral-400 px-4'>Las acciones que realices en esta sesión aparecerán aquí.</p>
+              <p className='text-[12px] text-neutral-400 px-4'>
+                Las acciones que realices en esta sesión aparecerán aquí.
+              </p>
             </div>
           ) : (
-            activities.map(act => (
+            activities.map((act) => (
               <div
                 key={act.id}
                 className='text-[12px] bg-neutral-50/80 p-3 rounded-lg border border-neutral-100 shadow-2xs hover:bg-neutral-50 transition-colors animate-in fade-in slide-in-from-bottom-1 duration-200'
               >
-                <p className='text-neutral-600 leading-relaxed font-medium break-words'>{act.text}</p>
-                <span className='text-[11px] text-neutral-400 block mt-1.5 text-right font-mono'>{act.time}</span>
+                <p className='text-neutral-600 leading-relaxed font-medium break-words'>
+                  {act.text}
+                </p>
+                {/* Muestra fecha (izquierda) y hora (derecha) en formato monoespaciado */}
+                <div className='flex justify-between items-center text-[10px] text-neutral-400 mt-1.5 font-mono font-medium'>
+                  <span>{act.date}</span>
+                  <span>{act.time}</span>
+                </div>
               </div>
             ))
           )}
         </div>
+
+        {/* Botón inferior para vaciar el historial si tiene elementos */}
+        {activities.length > 0 && (
+          <div className='pt-3 border-t border-neutral-100 bg-white shrink-0'>
+            <button
+              onClick={clearActivity}
+              className='w-full py-2 text-xs text-red-500 hover:bg-red-50 font-bold rounded-lg transition-colors cursor-pointer border border-dashed border-red-200'
+            >
+              Limpiar historial
+            </button>
+          </div>
+        )}
       </div>
     </>
   )
