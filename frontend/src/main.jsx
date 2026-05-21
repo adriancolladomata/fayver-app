@@ -10,7 +10,7 @@ import { ConfirmationProvider } from './context/ConfirmationContext.jsx' // 🎯
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ToastProvider>
-      <ConfirmationProvider> {/* 🎯 Envolvemos */}
+      <ConfirmationProvider>
         <AuthProvider>
           <App />
         </AuthProvider>

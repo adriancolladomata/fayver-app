@@ -7,7 +7,7 @@ const listSchema = z.object({
   })
     .trim()
     .min(1, 'El nombre debe tener al menos 1 caracter')
-    .max(50, 'EL nombre debe tener menos de 100 caractéres'),
+    .max(75, 'EL nombre debe tener menos de 75 caractéres'),
 
   color: z.string().regex(/^#([0-9a-fA-F]{3}){1,2}$/, {
     message: 'Debe ser un código de color hexadecimal válido (ej: #ffae00)'

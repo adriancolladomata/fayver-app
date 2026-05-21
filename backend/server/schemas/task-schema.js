@@ -8,7 +8,7 @@ const taskSchema = z.object({
   })
     .trim()
     .min(1, 'El nombre debe tener al menos 1 caracter')
-    .max(50, 'EL nombre debe tener menos de 100 caractéres'),
+    .max(100, 'EL nombre debe tener menos de 100 caractéres'),
 
   // Validación del contenido de la tarea
   content: z.string({
