@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { createBoardReq } from '../services/boardService'
 import { useBoards } from '../context/BoardContext'
 import { useToast } from '../context/ToastContext'
 
-export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
+export const CreateBoardModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const { createBoard } = useBoards()
@@ -26,17 +25,19 @@ export const CreateBoardModal = ({ isOpen, onClose, onBoardCreated }) => {
     setLoading(true)
 
     try {
-      // Usamos la función del BoardContext para crear el nuevo tablero, la cual se encargará de hacer la petición al backend
-      // y atualizar el estado global de los tableros
-      await createBoard(name)
+      // Usamos la función del BoardContext para crear el nuevo tablero con el formato de payload correcto
+      const newBoard = await createBoard({ name: name.trim() })
       showToast('Tablón creado con éxito', 'success')
       setName('')
-      // Cerramos el modal
       onClose()
+      return newBoard
     } catch (error) {
-      // En caso de error, lo mostramos en consola y alertamos al usuario
       console.error('Error al crear:', error)
-      showToast('No se pudo crear el tablón', 'error')
+      const backendError = error?.response?.data
+      const message = backendError?.error
+        ? Object.values(backendError.error).flat().join(' • ')
+        : 'No se pudo crear el tablón'
+      showToast(message, 'error')
     } finally {
       setLoading(false)
     }
