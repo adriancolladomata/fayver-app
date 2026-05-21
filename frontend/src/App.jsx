@@ -10,6 +10,7 @@ import { Sidebar } from './components/Sidebar'
 import { NavBar } from './components/NavBar'
 import { BoardProvider } from './context/BoardContext'
 import { ActivityProvider } from './context/ActivityContext'
+import { ActivitySidebar } from './components/ActivitySidebar'
 
 // Definición del componente principal App de la aplicación.
 function App () {
@@ -34,6 +35,8 @@ function App () {
               <div className='flex-1 flex flex-col min-w-0'>
                 {/* Renderizamos la barra de navegación aquí, arriba de las rutas */}
                 <NavBar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
+
+                <ActivitySidebar />
 
                 {/* Contenedor principal de las páginas con scroll independiente */}
                 <main className='flex-1 overflow-y-auto p-6'>
