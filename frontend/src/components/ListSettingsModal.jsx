@@ -48,8 +48,18 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists = [
       setLoading(true)
       setMessage({ type: '', text: '' })
       console.log('Intentando actualizar nombre:', { boardId, listId: list.id, newName: newName.trim() })
+
+      const oldName = list?.name || 'Lista'
+
       await updateList(list.id, { name: newName.trim() })
-      logActivity(getActivityMessage('LIST_UPDATE_NAME', { name: newName.trim(), boardName: currentBoard?.name }))
+
+      logActivity(
+        getActivityMessage('LIST_UPDATE_NAME', {
+          name: newName.trim(),
+          oldListName: oldName,
+          boardName: currentBoard?.name
+        })
+      )
       setMessage({ type: 'success', text: 'Nombre actualizado correctamente' })
       setTimeout(() => {
         setCurrentTab('main')

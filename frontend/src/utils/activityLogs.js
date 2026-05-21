@@ -8,9 +8,14 @@ export const getActivityMessage = (action, details = {}) => {
   const listCtx = details.listName ? ` en la lista "${details.listName}"` : ''
 
   const messages = {
+    // ACCIONES DE TABLONES
+    BOARD_CREATE: `Creaste el nuevo tablón "${details.boardName}".`,
+    BOARD_RENAME: `Modificaste el nombre del tablón "${details.oldBoardName}" a "${details.boardName}"`,
+    BOARD_DELETE: `Eliminaste el tablón "${details.boardName}".`,
+
     // ACCIONES DE LISTAS
     LIST_CREATE: `Creaste la lista "${details.name}"${boardCtx}.`,
-    LIST_UPDATE_NAME: `Modificaste el nombre de la lista a "${details.name}"${boardCtx}.`,
+    LIST_UPDATE_NAME: `Modificaste el nombre de la lista "${details.oldListName}" a "${details.name}"${boardCtx}.`,
     LIST_UPDATE_COLOR: `Modificaste el color de la lista a "${details.color}"${boardCtx}.`,
     LIST_ARCHIVE: `Archivaste la lista "${details.name}"${boardCtx}.`,
     LIST_RESTORE: `Restauraste la lista "${details.name}"${boardCtx}.`,

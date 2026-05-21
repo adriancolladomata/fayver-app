@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { getBoardsReq, createBoardReq, updateBoardReq, deleteBoardReq } from '../services/boardService'
+import { useActivity } from './ActivityContext'
+import { getActivityMessage } from '../utils/activityLogs'
 
 // Instancia del contexto, el cual luego se usará para compartir datos en otros archivos.
 const BoardContext = createContext()
@@ -21,6 +23,7 @@ export const BoardProvider = ({ children }) => {
   const [boards, setBoards] = useState([])
   const [loading, setLoading] = useState(true)
   const [currentBoard, setCurrentBoard] = useState(null)
+  const { logActivity } = useActivity()
 
   // Función para cargar los tableros desde el backend. Se llama al abrir la página para mostrar los tableros del usuario.
   const loadBoards = async () => {
@@ -44,49 +47,72 @@ export const BoardProvider = ({ children }) => {
   }, [])
 
   // Función para crear un nuevo tablero.
-  const createBoard = async (name) => {
+  const createBoard = async (boardData) => {
     try {
-      // Llmamos a la función del boardService que hace la petición al backend para crear un nuevo tablero, donde se le pasa el nombre del tablero.
-      const newBoard = await createBoardReq({ name })
-      // Actualizamos el estado global: todos los que usen este contexto lo verán
-      setBoards((prev) => [...prev, newBoard])
+      // Llamamos al servicio: api.post('/boards', boardData)
+      const newBoard = await createBoardReq(boardData)
+
+      // Sincronizamos el estado de React
+      setBoards(prev => [...prev, newBoard])
+
+      // Registramos en el historial
+      logActivity(getActivityMessage('BOARD_CREATE', {
+        boardName: newBoard.name
+      }))
+
       return newBoard
     } catch (error) {
-      // En caso de que salga mal, lanzamos un error en consola.
-      console.error('Error al crear el tablón: ', error)
-      throw error
+      console.error('Error al crear el tablón:', error)
+      throw error // Re-lanzamos para que el modal/componente pueda manejar el error visual
     }
   }
 
   // Función paa actualizar el tablón
   const updateBoard = async (boardId, newName) => {
     try {
-      // Petición para actualizar el tablón al backend
-      const res = await updateBoardReq(boardId, { name: newName })
+      // Localizamos el nombre viejo antes de pisarlo para el historial
+      const boardToUpdate = boards.find(b => b.id === boardId)
+      const oldName = boardToUpdate ? boardToUpdate.name : 'Tablón'
 
-      // Actualizamos el estado local para que cambie visualmente en el momento
-      setBoards(previousBoards => previousBoards.map(
-        board => board.id === boardId ? { ...board, name: newName } : board
-      ))
+      // Llamamos a tu servicio: api.put(`/boards/${boardId}`, { name: "..." })
+      const updatedBoard = await updateBoardReq(boardId, { name: newName })
 
-      if (currentBoard?.id === boardId) {
-        setCurrentBoard(prev => ({ ...prev, name: newName }))
+      // Sincronizamos la lista global de tablones
+      setBoards(prev => prev.map(b => b.id === boardId ? updatedBoard : b))
+
+      // Si el usuario está metido dentro de ese tablón, actualizamos la info de la cabecera
+      if (currentBoard && currentBoard.id === boardId) {
+        setCurrentBoard(updatedBoard)
       }
 
-      // Devolvemos la respuesta
-      return res
+      // Registramos en el historial
+      logActivity(getActivityMessage('BOARD_RENAME', {
+        oldBoardName: oldName,
+        newBoardName: newName
+      }))
+
+      return updatedBoard
     } catch (error) {
-      console.error('Error al actualizar el tablón:', error)
+      console.error('Error al renombrar el tablón:', error)
       throw error
     }
   }
 
   const deleteBoard = async (boardId) => {
     try {
+    // Buscamos el tablón en el estado actual para rescatar su nombre para el historial
+      const boardToDelete = boards.find(board => board.id === boardId)
+      const boardName = boardToDelete ? boardToDelete.name : 'Tablón sin nombre'
+
       // Hacemos la petición de borrar el tablón al backend
       const res = await deleteBoardReq(boardId)
 
-      // Actualizamos el estaid en local para qu se muestre al instante filtrando todos
+      // Registramos la actividad en el historial antes de limpiar el estado del cliente
+      logActivity(getActivityMessage('BOARD_DELETE', {
+        boardName: boardName
+      }))
+
+      // Actualizamos el estado en local para que se muestre al instante filtrando todos
       // los tablones que no coincidan con el id proporcionado
       setBoards(previousBoards => previousBoards.filter(board => board.id !== boardId))
     } catch (error) {
