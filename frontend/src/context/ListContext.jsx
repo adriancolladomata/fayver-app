@@ -25,11 +25,16 @@ export const ListProvider = ({ children, boardId }) => {
   // Función para cargar las listas del tablero actual, se llama al abrir la págin del tablero.
   // Se usa useCallBack para memorizar la función y evitar que se vuelva a crear en cada renderizado, evitado así bucles infinitos en useEffect de BoardPage.jsx
   const loadLists = useCallback(async () => {
+    if (!boardId) return
+
+    let isCurrentRequest = true
     try {
       // Asignamos la carga como true para mostrar el mensaje de carga mientras se obtienen las listas y tareas.
       setLoading(true)
       // Llamamos a la funcion getListsReq e listService para obtener las listas del tablero actual.
       const listsData = await getListsReq(boardId)
+
+      if (!isCurrentRequest) return
 
       // Por cada lista obtenida, llamamos a getTasksReq para obtener las tareas de esa lista,
       // y devolvemos un nuevo objeto que incluye las tareas dentro de la lista.
@@ -51,14 +56,22 @@ export const ListProvider = ({ children, boardId }) => {
         })
       )
 
-      // Actualizamos el estado de las listas con las tareas incluidas.
-      setLists(listsWithTasks)
+      if (isCurrentRequest) {
+        // Actualizamos el estado de las listas con las tareas incluidas.
+        setLists(listsWithTasks)
+      }
+
     } catch (err) {
       // Lanzamos un error en consola si algo falla
       console.error('Error al cargar las listas:', err)
     } finally {
-      // Finalmente, indicamos que la carga ha finalizado
-      setLoading(false)
+      if (isCurrentRequest) {
+        setLoading(false)
+      }
+    }
+
+    return () => {
+      isCurrentRequest = false
     }
     // El array de dependencias incluye boardId para que, si el usuario cambia de tablero, se vuelvan a cargar
     // las listas del nuevo tablero.

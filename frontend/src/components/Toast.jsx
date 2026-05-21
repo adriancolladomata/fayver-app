@@ -1,3 +1,5 @@
+// 🛠️ CAMBIO: Se eliminó por completo el bloque secundario duplicado que repetía la definición entera de la función e incrementaba el peso de la compilación.
+
 export const Toast = ({ message, type, visible }) => {
   if (!visible || !message) return null
 

@@ -68,7 +68,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
       return
     }
 
-    // 🎯 Construimos el objeto enviando SIEMPRE las propiedades críticas.
+    // Construimos el objeto enviando SIEMPRE las propiedades críticas.
     // De esta forma, si el backend no es dinámico, no pisará datos con valores por defecto.
     const updateData = {
       name: trimmedName,
@@ -137,7 +137,9 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
   if (!isOpen || !task) return null
 
   const previewName = name.trim() || task.name || ''
-  const previewTags = tags.trim()
+  const previewTagsArray = tags.trim()
+    ? [...new Set(tags.split(',').map(t => t.trim()).filter(Boolean))]
+    : []
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm'>
@@ -149,13 +151,13 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
 
         <form onSubmit={handleSave} className='p-6 space-y-5'>
           <div className='grid gap-4 md:grid-cols-2'>
-            <label className='space-y-2 text-sm text-gray-700'>
+            <label className='space-y-2 text-sm text-gray-700 block'>
               Nombre
               <input
                 type='text'
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none'
+                className='w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 mt-1'
                 disabled={loading}
               />
             </label>
@@ -225,18 +227,18 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
               {color && color !== '#ffffff' && (
                 <div className='h-1 rounded-full' style={{ backgroundColor: color }} />
               )}
-              {previewTags ? (
-                <div className='flex flex-wrap gap-2'>
-                  {previewTags.split(',').map((tag) => (
+              {previewTagsArray.length > 0 && (
+                <div className='flex flex-wrap gap-2 mt-1'>
+                  {previewTagsArray.map((tag, i) => (
                     <span
-                      key={tag.trim()}
-                      className='text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full'
+                      key={`${tag}-${i}`}
+                      className='text-xs bg-gray-200/80 text-gray-700 px-2.5 py-0.5 rounded-full font-medium'
                     >
-                      {tag.trim()}
+                      {tag}
                     </span>
                   ))}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
 

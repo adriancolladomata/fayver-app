@@ -135,6 +135,7 @@ export const ListColumn = ({ list, boardId }) => {
 
     const oldIndex = localTasks.findIndex(t => t.id === active.id)
     const newIndex = localTasks.findIndex(t => t.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
     const draggedTask = localTasks[oldIndex]
     const newTasksOrder = arrayMove(localTasks, oldIndex, newIndex)
 
@@ -160,7 +161,7 @@ export const ListColumn = ({ list, boardId }) => {
       console.log('¡Orden de tareas guardado en base de datos!')
     } catch (error) {
       console.error('Error al reordenar tareas:', error)
-      setLocalTasks(list.tasks) // Revertir si hay error de red/servidor
+      setLocalTasks(list.tasks || []) // Revertir si hay error de red/servidor
     }
   }
 
@@ -211,7 +212,7 @@ export const ListColumn = ({ list, boardId }) => {
         </div>
 
         {/* ZONA DE TAREAS: ENCAPSULADA CON SU PROPIO CONTEXTO DND */}
-        <div className='space-y-2 mb-4 max-h-96 overflow-y-auto custom-scrollbar'>
+        <div className='space-y-2 mb-4 max-h-96 overflow-y-auto custom-scrollbar flex-1'>
           <DndContext sensors={taskSensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
             <SortableContext items={localTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
               {localTasks.length > 0 ? (
@@ -232,13 +233,24 @@ export const ListColumn = ({ list, boardId }) => {
 
         <button
           onClick={() => setShowTaskModal(true)}
-          className='w-full py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium cursor-pointer'
+          className='w-full py-2 px-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium cursor-pointer mt-auto'
         >
           + Nueva tarea
         </button>
       </div>
 
       <CreateTaskModal listId={list.id} boardId={boardId} isOpen={showTaskModal} onClose={() => setShowTaskModal(false)} />
+      {/* 🛠️ CAMBIO: Control preventivo: Solo montamos TaskDetailsModal si activeTask no es nulo, protegiendo los ciclos de hooks de la modal */}
+      {activeTask && (
+        <TaskDetailsModal
+          isOpen={!!activeTask}
+          onClose={() => setActiveTask(null)}
+          task={activeTask}
+          boardId={boardId}
+          listId={list.id}
+          tasks={list.tasks || []}
+        />
+      )}
       <TaskDetailsModal isOpen={!!activeTask} onClose={() => setActiveTask(null)} task={activeTask} boardId={boardId} listId={list.id} tasks={list.tasks} />
       <ListSettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} list={list} boardId={boardId} allLists={lists} />
     </>
