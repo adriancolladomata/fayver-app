@@ -2,7 +2,7 @@ import { useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useBoards } from '../context/BoardContext'
 
-// 🎯 Recibimos las propiedades de control de la sidebar desde el Layout padre
+// Recibimos las propiedades de control de la sidebar desde el Layout padre
 export const NavBar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const { user } = useAuth()
   const { currentBoard } = useBoards()

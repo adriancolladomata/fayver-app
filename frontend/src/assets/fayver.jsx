@@ -1,3 +1,4 @@
+// .svg del logo de Fayver convertido a componente React para poder usarlo en NavBar y otras partes de la app sin depender de archivos externos.
 export const FayverFlowLogo = ({ className }) => (
   <svg
     className={className}

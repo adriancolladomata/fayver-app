@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLists } from '../context/ListContext'
 import { useToast } from '../context/ToastContext'
+import { getActivityMessage } from '../utils/activityLogs'
 
 export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) => {
   const [currentTab, setCurrentTab] = useState('main') // main, rename, move, color, delete
@@ -8,7 +9,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
   const [selectedColor, setSelectedColor] = useState(list?.color || '#ffffff')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
-  const { updateList, reorderLists, deleteList } = useLists()
+  const { updateList, reorderLists, deleteList, logActivity } = useLists()
   const { showToast } = useToast()
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
       setMessage({ type: '', text: '' })
       console.log('Intentando actualizar nombre:', { boardId, listId: list.id, newName: newName.trim() })
       await updateList(list.id, { name: newName.trim() })
+      logActivity(getActivityMessage('LIST_UPDATE_NAME', { name: newName.trim() }))
       setMessage({ type: 'success', text: 'Nombre actualizado correctamente' })
       setTimeout(() => {
         setCurrentTab('main')
@@ -64,6 +66,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
       setLoading(true)
       setMessage({ type: '', text: '' })
       await updateList(list.id, { color: selectedColor })
+      logActivity(getActivityMessage('LIST_UPDATE_COLOR', { color: selectedColor }))
       setMessage({ type: 'success', text: 'Color actualizado correctamente' })
       setTimeout(() => {
         setCurrentTab('main')
@@ -94,6 +97,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
         }))
 
         await reorderLists(reorderData)
+        logActivity(getActivityMessage('LIST_REORDER'))
         setMessage({ type: 'success', text: 'Lista movida correctamente' })
         setTimeout(() => {
           setCurrentTab('main')
@@ -113,6 +117,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
       setLoading(true)
       setMessage({ type: '', text: '' })
       await deleteList(list.id)
+      logActivity(getActivityMessage('LIST_DELETE', {name: list.name}))
       setMessage({ type: 'success', text: 'La lista ha sido eliminada correctamente' })
       setTimeout(() => {
         onClose()
@@ -131,6 +136,7 @@ export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists }) 
     try {
       setLoading(true)
       await updateList(list.id, { is_archived: true })
+      logActivity(getActivityMessage('LIST_ARCHIVE', {name: list.name}))
       showToast('Lista archivada correctamente', 'success') // Si tienes acceso a showToast
       onClose()
     } catch (error) {

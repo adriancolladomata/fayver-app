@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useTasks } from '../hooks/useTasks'
-import { useToast } from '../context/ToastContext' // 🎯 Importamos el Toast global
-import { useConfirmation } from '../context/ConfirmationContext' // 🎯 Importamos la Confirmación global
+import { useToast } from '../context/ToastContext'
+import { useConfirmation } from '../context/ConfirmationContext'
+import { useLists } from '../context/ListContext'
+import { getActivityMessage } from '../utils/activityLogs'
 
 const colorOptions = [
   '#ffffff',
@@ -24,6 +26,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
   const { showToast } = useToast()
   const { requireConfirm } = useConfirmation()
   const { updateTask, deleteTask } = useTasks(boardId)
+  const { logActivity } = useLists()
 
   useEffect(() => {
     if (!task) return
@@ -77,6 +80,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     try {
       setLoading(true)
       await updateTask(listId, task.id, updateData)
+      logActivity(getActivityMessage('TASK_UPDATE', { name: name.trim() }))
       showToast('Tarea guardada correctamente.', 'success')
       onClose()
     } catch (error) {
@@ -101,6 +105,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
     try {
       setLoading(true)
       await deleteTask(listId, task.id)
+      logActivity(getActivityMessage('TASK_DELETE', { name: task.name }))
       showToast('Tarea eliminada con éxito', 'success')
       onClose() // 🎯 Cierra el modal de detalles enseguida tras borrar
     } catch (error) {

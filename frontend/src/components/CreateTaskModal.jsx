@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { useTasks } from '../hooks/useTasks'
+import { useLists } from '../context/ListContext'
+import { getActivityMessage } from '../utils/activityLogs'
 
 export const CreateTaskModal = ({ listId, isOpen, onClose }) => {
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { createTask } = useTasks()
+  const { logActivity } = useLists()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,6 +21,7 @@ export const CreateTaskModal = ({ listId, isOpen, onClose }) => {
       setLoading(true)
       setError('')
       await createTask(listId, name.trim())
+      logActivity(getActivityMessage('TASK_CREATE', { name: name.trim() }))
       setName('')
       setError('')
       onClose()
