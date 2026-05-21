@@ -7,7 +7,8 @@ import { useTasks } from '../hooks/useTasks'
 import { useSortable, SortableContext, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
-import { updateTasksOrderReq } from '../services/taskService' // 🟢 Asegúrate de importar el endpoint masivo en tus servicios (puedes añadir la función abajo)
+import { updateTasksOrderReq } from '../services/taskService'
+import { getActivityMessage } from '../utils/activityLogs'
 
 // Componente Envolvedor interno para cada tarjeta de Tarea para que sea Sortable
 const SortableTaskItem = ({ task, onClick, onToggleComplete }) => {
@@ -88,7 +89,7 @@ export const ListColumn = ({ list, boardId }) => {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [activeTask, setActiveTask] = useState(null)
-  const { lists } = useLists()
+  const { lists, logActivity } = useLists()
   const { deleteTask, updateTask } = useTasks(boardId)
 
   // ESTADO LOCAL DE TAREAS PARA OPTIMISTIC UI
@@ -130,6 +131,7 @@ export const ListColumn = ({ list, boardId }) => {
 
     const oldIndex = localTasks.findIndex(t => t.id === active.id)
     const newIndex = localTasks.findIndex(t => t.id === over.id)
+    const draggedTask = localTasks[oldIndex]
     const newTasksOrder = arrayMove(localTasks, oldIndex, newIndex)
 
     // Actualización inmediata del UI
@@ -144,6 +146,12 @@ export const ListColumn = ({ list, boardId }) => {
     try {
       // Usamos el servicio de tareas apuntando al endpoint masivo
       await updateTasksOrderReq(boardId, list.id, payload)
+      logActivity(getActivityMessage('TASK_REORDER', {
+        listName: list.name,
+        draggedName: draggedTask.name,
+        oldIndex,
+        newIndex
+      }))
       console.log('¡Orden de tareas guardado en base de datos!')
     } catch (error) {
       console.error('Error al reordenar tareas:', error)
@@ -152,8 +160,14 @@ export const ListColumn = ({ list, boardId }) => {
   }
 
   const handleToggleComplete = async (taskId, currentStatus) => {
+    const targetTask = localTasks.find(t => t.id === taskId)
+    const taskName = targetTask ? targetTask.name : 'Tarea'
     try {
       await updateTask(list.id, taskId, { is_completed: !currentStatus })
+      logActivity(getActivityMessage('TASK_TOGGLE', {
+        taskName: taskName,
+        status: !currentStatus ? 'completada' : 'pendiente'
+      }))
     } catch (error) {
       console.error('Error al cambiar estado de la tarea:', error)
     }

@@ -9,6 +9,7 @@ import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-
 import { reorderListsReq } from '../services/listService'
 import { ArchivedElementsModal } from '../components/ArchivedElementsModal'
 import { ActivitySidebar } from '../components/ActivitySidebar'
+import { getActivityMessage } from '../utils/activityLogs'
 
 const BoardPageContent = () => {
   const { boardId } = useParams()
@@ -81,7 +82,11 @@ const BoardPageContent = () => {
     try {
       // Llamamos a tu servicio nativo de la aplicación
       await reorderListsReq(boardId, payload)
-      logActivity(`Reordenaste las listas. "${draggedList.name}" pasó de la posición ${oldIndex + 1} a la ${newIndex + 1}.`)
+      logActivity(getActivityMessage('LIST_REORDER', {
+        draggedName: draggedList.name,
+        oldIndex,
+        newIndex
+      }))
       console.log('¡Orden de listas sincronizado en la base de datos!')
     } catch (error) {
       console.error('Error al guardar el reordenamiento:', error)
