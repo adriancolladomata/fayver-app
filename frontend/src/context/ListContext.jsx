@@ -21,6 +21,20 @@ export const ListProvider = ({ children, boardId }) => {
   const [lists, setLists] = useState([])
   // Creación de la variable de carga.
   const [loading, setLoading] = useState(true)
+  // Creación del estado que guarda el historial de la sesión actual
+  const [activities, setActivities] = useState([])
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false)
+
+  // Función que registra una actividad añadiendole un id, un texto y un formato de fecha para indicar cuando se realizó.
+  const logActivity = useCallback((actionText) => {
+    const newActivity = {
+      id: crypto.randomUUID(),
+      text: actionText,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+    // Mantiene un histórico limpio limitándolo a las últimas 15 acciones (Fayol)
+    setActivities(prev => [newActivity, ...prev].slice(0, 15))
+  }, [])
 
   // Función para cargar las listas del tablero actual, se llama al abrir la págin del tablero.
   // Se usa useCallBack para memorizar la función y evitar que se vuelva a crear en cada renderizado, evitado así bucles infinitos en useEffect de BoardPage.jsx
@@ -133,6 +147,7 @@ export const ListProvider = ({ children, boardId }) => {
   // En este caso, compartimos la lista de listas, el estado de carga, la función para cargar las listas,
   // la función para crear una nueva lista, la función para crear una nueva tarea, la función para eliminar una lista,
   // y la función para eliminar una tarea
+  // 🌟 Inyectamos las nuevas propiedades en el value compartido
   const value = {
     lists,
     setLists,
@@ -141,7 +156,11 @@ export const ListProvider = ({ children, boardId }) => {
     createList,
     deleteList,
     updateList,
-    reorderLists
+    reorderLists,
+    activities,
+    logActivity,
+    isHistoryOpen,
+    setIsHistoryOpen
   }
 
   // Devolvemos el ListContext.Provider con el valor del contexto y envolviendo a toda la aplicación (children)

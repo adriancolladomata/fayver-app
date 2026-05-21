@@ -6,7 +6,7 @@ export const CreateListModal = ({ isOpen, onClose }) => {
   const [color, setColor] = useState('#ffffff')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const { createList } = useLists()
+  const { createList, logActivity } = useLists()
 
   const colors = [
     '#ffffff',
@@ -29,6 +29,8 @@ export const CreateListModal = ({ isOpen, onClose }) => {
       setLoading(true)
       setError('')
       await createList(name.trim(), color)
+      logActivity(`Creaste la lista "${name}"`)
+
       setName('')
       setColor('#ffffff')
       setError('')

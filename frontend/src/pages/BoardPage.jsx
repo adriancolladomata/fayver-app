@@ -8,6 +8,7 @@ import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from 
 import { SortableContext, horizontalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { reorderListsReq } from '../services/listService'
 import { ArchivedElementsModal } from '../components/ArchivedElementsModal'
+import { ActivitySidebar } from '../components/ActivitySidebar'
 
 const BoardPageContent = () => {
   const { boardId } = useParams()
@@ -15,7 +16,7 @@ const BoardPageContent = () => {
   const [showListModal, setShowListModal] = useState(false)
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [currentBoardInfo, setCurrentBoardInfo] = useState(null)
-  const { lists, loading, loadLists } = useLists()
+  const { lists, loading, loadLists, isHistoryOpen, setIsHistoryOpen, logActivity } = useLists()
   const { boards, setCurrentBoard } = useBoards()
   const [localLists, setLocalLists] = useState([])
 
@@ -64,6 +65,8 @@ const BoardPageContent = () => {
     // Calculamos el nuevo orden en el cliente (Optimistic UI)
     const oldIndex = localLists.findIndex((list) => list.id === active.id)
     const newIndex = localLists.findIndex((list) => list.id === over.id)
+    // Obtenemos la lista movida para escribirla en el historial
+    const draggedList = localLists[oldIndex]
     const newOrder = arrayMove(localLists, oldIndex, newIndex)
 
     // Modificamos el estado visual de inmediato para que sea instantáneo
@@ -78,6 +81,7 @@ const BoardPageContent = () => {
     try {
       // Llamamos a tu servicio nativo de la aplicación
       await reorderListsReq(boardId, payload)
+      logActivity(`Reordenaste las listas. "${draggedList.name}" pasó de la posición ${oldIndex + 1} a la ${newIndex + 1}.`)
       console.log('¡Orden de listas sincronizado en la base de datos!')
     } catch (error) {
       console.error('Error al guardar el reordenamiento:', error)
@@ -91,7 +95,7 @@ const BoardPageContent = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50 p-8'>
+    <div className={`min-h-screen bg-gray-50 p-8 transition-all duration-300 ${isHistoryOpen ? 'max-sm:overflow-hidden' : ''}`}>
 
       {/* CABECERA DEL TABLERO */}
       <div className='mb-8 flex justify-between items-center'>
@@ -103,6 +107,18 @@ const BoardPageContent = () => {
         {/* Acciones de la cabecera */}
         <div className='flex items-center gap-3'>
           {/* Botón de Elementos Archivados integrado estéticamente */}
+          <button
+            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
+            className={`px-3.5 py-2 text-sm font-semibold rounded-lg border transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm ${
+              isHistoryOpen
+                ? 'bg-blue-50 text-blue-700 border-blue-200 ring-2 ring-blue-100' 
+                : 'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50'
+            }`}
+            title="Ver historial de cambios"
+          >
+            <span>⏱️</span>
+            <span className='hidden sm:inline'>Historial</span>
+          </button>
           <button
             onClick={() => setShowArchiveModal(true)}
             className='px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 font-medium rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-sm'
@@ -160,6 +176,8 @@ const BoardPageContent = () => {
         onClose={() => setShowArchiveModal(false)}
         boardId={boardId}
       />
+
+      <ActivitySidebar />
     </div>
   )
 }

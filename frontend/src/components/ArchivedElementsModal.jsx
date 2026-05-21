@@ -9,7 +9,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
   const [loading, setLoading] = useState(false)
 
   const { requireConfirm } = useConfirmation()
-  const { loadLists } = useLists()
+  const { loadLists, logActivity } = useLists()
 
   const fetchArchivedStructure = async () => {
     if (!boardId) return // Seguridad por si no hay tablón cargado
@@ -49,6 +49,9 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
     // 1. Hace la petición de restauración al servidor
       await updateListReq(boardId, listId, { is_archived: false })
 
+      // Mensaje para el historial de actividad
+      logActivity('Restauraste una lista desde el menú de elementos archivados.')
+
       // 2. Refresca el contenido interno del modal de archivados
       await fetchArchivedStructure()
 
@@ -64,12 +67,13 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
   const handleSoftDeleteList = async (listId) => {
     const isConfirmed = await requireConfirm(
       'Eliminar Lista',
-      '¿Estás seguro de que quieres enviar esta lista a la papelera? Podrás recuperarla desde la papelera general.'
+      '¿Estás seguro de que quieres eliminar esta lista? No podrás recuperarla de nuevo.'
     )
     if (isConfirmed) {
       await deleteListReq(boardId, listId)
       await fetchArchivedStructure()
       await loadLists()
+      logActivity('Enviaste una lista a la papelera general.')
     }
   }
 
@@ -90,7 +94,10 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
 
         {/* Cuerpo Árbol */}
         <div className='flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar bg-neutral-50/50'>
-          {structuredData.length === 0 ? (
+          {loading ? (
+          // Mientras carga, muestra un indicador elegante en lugar de decir que está vacío
+            <p className='text-neutral-500 text-sm text-center py-12 animate-pulse'>Cargando elementos archivados...</p>
+          ) : structuredData.length === 0 ? (
             <p className='text-neutral-400 text-sm text-center py-12'>No hay elementos archivados en este tablón.</p>
           ) : (
             structuredData.map(list => {

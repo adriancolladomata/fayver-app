@@ -114,7 +114,7 @@ export class ListModel {
       AND l.deleted_at IS NULL
       AND l.is_archived = 1
     ORDER BY l.\`order\` ASC, t.\`order\` ASC
-  `
+    `
     const [rows] = await db.query(query, [boardId])
     return rows
   }

@@ -18,7 +18,7 @@ export const MainLayout = () => {
         <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
         {/* Contenido de la página actual (Tableros, Dashboard, etc.) */}
-        <main className='flex-1 overflow-auto p-8'>
+        <main className='flex-1 overflow-auto p-8 relative'>
           <Outlet />
         </main>
       </div>
