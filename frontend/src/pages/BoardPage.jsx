@@ -17,7 +17,7 @@ const BoardPageContent = () => {
   const [showListModal, setShowListModal] = useState(false)
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const [currentBoardInfo, setCurrentBoardInfo] = useState(null)
-  const { lists, loading, loadLists } = useLists()
+  const { lists, loading, loadLists, setLists } = useLists()
   const { logActivity } = useActivity()
   const { boards, setCurrentBoard } = useBoards()
   const [localLists, setLocalLists] = useState([])
@@ -83,6 +83,7 @@ const BoardPageContent = () => {
     try {
       // Llamamos a tu servicio nativo de la aplicación
       await reorderListsReq(boardId, payload)
+      setLists(newOrder)
       logActivity(getActivityMessage('LIST_REORDER', {
         draggedName: draggedList.name,
         oldIndex,

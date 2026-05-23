@@ -1,6 +1,7 @@
 import mysql from 'mysql2/promise'
 import { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } from '../../config.js'
 
+// Crea un pool de conexiones, lo que hace que se mantengan varias conexiones disponibles para usarse
 export const db = mysql.createPool({
   host: DB_HOST,
   user: DB_USER,
@@ -11,6 +12,7 @@ export const db = mysql.createPool({
   connectionLimit: 10
 })
 
+// FUnción para comprobar que la conexión con la base de datos ha sido exitosa
 async function checkConnection () {
   try {
     const connection = await db.getConnection()

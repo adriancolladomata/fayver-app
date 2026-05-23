@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { CreateTaskModal } from './CreateTaskModal'
 import { ListSettingsModal } from './ListSettingsModal'
 import { TaskDetailsModal } from './TaskDetailsModal'
@@ -91,19 +91,11 @@ export const ListColumn = ({ list, boardId }) => {
   const [showTaskModal, setShowTaskModal] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [activeTask, setActiveTask] = useState(null)
-  const { lists } = useLists()
+  const { lists, setLists } = useLists()
   const { deleteTask, updateTask } = useTasks(boardId)
   const { logActivity } = useActivity()
   const { currentBoard } = useBoards()
-
-  // Estado local para mostrar cambios inmediatos en las tareas
-  const [localTasks, setLocalTasks] = useState([])
-
-  useEffect(() => {
-    if (list.tasks) {
-      setLocalTasks(list.tasks)
-    }
-  }, [list.tasks])
+  const tasks = list.tasks || []
 
   // Inicializar dnd-kit para que la lista pueda moverse
   const {
@@ -133,13 +125,15 @@ export const ListColumn = ({ list, boardId }) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    const oldIndex = localTasks.findIndex(t => t.id === active.id)
-    const newIndex = localTasks.findIndex(t => t.id === over.id)
-    const draggedTask = localTasks[oldIndex]
-    const newTasksOrder = arrayMove(localTasks, oldIndex, newIndex)
+    const oldIndex = tasks.findIndex(t => t.id === active.id)
+    const newIndex = tasks.findIndex(t => t.id === over.id)
+    const draggedTask = tasks[oldIndex]
+    const newTasksOrder = arrayMove(tasks, oldIndex, newIndex)
 
-    // Actualización inmediata del UI
-    setLocalTasks(newTasksOrder)
+    // Actualiza el estado global inmediatamente para evitar desincronización
+    setLists(prevLists => prevLists.map(l =>
+      l.id === list.id ? { ...l, tasks: newTasksOrder } : l
+    ))
 
     // Formatear payload para el backend de Zod: [{ id, order }]
     const payload = newTasksOrder.map((task, index) => ({
@@ -150,6 +144,12 @@ export const ListColumn = ({ list, boardId }) => {
     try {
       // Usamos el servicio de tareas apuntando al endpoint masivo
       await updateTasksOrderReq(boardId, list.id, payload)
+
+      // Sincroniza el orden con el contexto global para evitar que el estado local se revierta
+      setLists(prevLists => prevLists.map(l =>
+        l.id === list.id ? { ...l, tasks: newTasksOrder } : l
+      ))
+
       logActivity(getActivityMessage('TASK_REORDER', {
         listName: list.name,
         draggedName: draggedTask.name,
@@ -160,12 +160,14 @@ export const ListColumn = ({ list, boardId }) => {
       console.log('Orden de tareas guardado en base de datos')
     } catch (error) {
       console.error('Error al reordenar tareas:', error)
-      setLocalTasks(list.tasks) // Revertir si hay error de red/servidor
+      setLists(prevLists => prevLists.map(l =>
+        l.id === list.id ? { ...l, tasks: tasks } : l
+      ))
     }
   }
 
   const handleToggleComplete = async (taskId, currentStatus) => {
-    const targetTask = localTasks.find(t => t.id === taskId)
+    const targetTask = tasks.find(t => t.id === taskId)
     const taskName = targetTask ? targetTask.name : 'Tarea'
     try {
       await updateTask(list.id, taskId, { is_completed: !currentStatus })
@@ -213,9 +215,9 @@ export const ListColumn = ({ list, boardId }) => {
         {/* Zona de tareas con dnd-kit para arrastrar internamente */}
         <div className='space-y-2 mb-4 max-h-96 overflow-y-auto custom-scrollbar'>
           <DndContext sensors={taskSensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
-            <SortableContext items={localTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
-              {localTasks.length > 0 ? (
-                localTasks.map((task) => (
+            <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+              {tasks.length > 0 ? (
+                tasks.map((task) => (
                   <SortableTaskItem
                     key={task.id}
                     task={task}

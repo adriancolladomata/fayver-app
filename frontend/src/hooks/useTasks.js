@@ -83,11 +83,14 @@ export const useTasks = (explicitBoardId) => {
         if (typeof loadLists === 'function') {
           await loadLists()
         } else {
-          syncLists(prevLists => (prevLists || []).map(l =>
-            l.id === listId
-              ? { ...l, tasks: (l.tasks || []).map(t => t.id === taskId ? { ...t, ...fieldsToUpdate } : t).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) }
-              : l
-          ))
+          // AHORA: Si cambió texto, color o checkbox, forzamos la recarga limpia para sincronizar los estados
+          if (typeof loadLists === 'function') {
+            await loadLists()
+          } else {
+            syncLists(prevLists => (prevLists || []).map(l =>
+              l.id === listId ? { ...l, tasks: (l.tasks || []).map(t => t.id === taskId ? { ...t, ...fieldsToUpdate } : t) } : l
+            ))
+          }
         }
       } else {
         // Si solo cambió texto o color, actualiza sin recargar

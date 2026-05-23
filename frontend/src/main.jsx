@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
-import { ConfirmationProvider } from './context/ConfirmationContext.jsx' // 🎯 Importamos
+import { ConfirmationProvider } from './context/ConfirmationContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

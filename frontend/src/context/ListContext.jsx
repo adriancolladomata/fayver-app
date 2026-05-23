@@ -102,7 +102,7 @@ export const ListProvider = ({ children, boardId }) => {
   const updateList = useCallback(async (listId, data) => {
     try {
       const response = await updateListReq(boardId, listId, data)
-      // Si el cambio es archivar, la detectamos y filtramos al instante para actualizar
+      // Si el cambio es archivar, filtramos al instante para actualizar la interfaz de golpe
       if (data && data.is_archived === true) {
         setLists(prevLists => prevLists.filter(list => list.id !== listId))
       } else {
