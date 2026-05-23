@@ -6,7 +6,7 @@ import { ActivitySidebar } from './ActivitySidebar'
 import { ActivityProvider } from '../context/ActivityContext'
 
 export const MainLayout = () => {
-  // 🎯 El estado ahora vive en el padre común
+  // El estado ahora vive en el padre común
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   return (
@@ -17,7 +17,7 @@ export const MainLayout = () => {
         <div className='flex-1 flex flex-col min-w-0 overflow-hidden'>
           <NavBar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
 
-          <main className='flex-1 overflow-auto p-8 relative'>
+          <main className='flex-1 overflow-y-auto overflow-x-hidden p-8 relative'>
             <Outlet />
           </main>
         </div>

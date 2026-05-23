@@ -16,8 +16,7 @@ export const NavBar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const isBoardRoute = pathNames[0] === 'board' && pathNames[1]
 
   return (
-    <nav className='bg-white h-16 flex items-center justify-between px-8 border-b border-gray-200 shadow-sm w-full shrink-0'>
-
+    <nav className='bg-white h-16 flex items-center justify-between px-8 border-b border-gray-200 shadow-sm min-w-0 flex-1 shrink-0'>
       {/* IZQUIERDA: Botón Desplegable + Breadcrumbs */}
       <div className='flex items-center text-sm gap-3'>
 
