@@ -10,14 +10,14 @@ export const ConfirmationProvider = ({ children }) => {
     resolveRef: null
   })
 
-  // Esta función devuelve una Promesa que se resolverá con true o false
+  // Muestra un modal y devuelve una promesa con la decisión del usuario
   const requireConfirm = useCallback((title, message) => {
     return new Promise((resolve) => {
       setConfig({
         isOpen: true,
         title,
         message,
-        resolveRef: resolve // Guardamos la función resolve para activarla desde los botones
+        resolveRef: resolve // Guardar la función resolve para usarla en los botones
       })
     })
   }, [])
@@ -36,12 +36,12 @@ export const ConfirmationProvider = ({ children }) => {
     <ConfirmationContext.Provider value={{ requireConfirm }}>
       {children}
 
-      {/* Modal de Confirmación Estilizado con Tailwind */}
+      {/* Modal de confirmación visible cuando config.isOpen es verdadero */}
       {config.isOpen && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200'>
           <div className='bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-neutral-100'>
 
-            {/* Cabecera de Alerta */}
+            {/* Cabecera del modal */}
             <div className='p-5 border-b border-neutral-100 flex items-center gap-3 bg-rose-50/50'>
               <div className='p-2 bg-rose-100 text-rose-600 rounded-lg shrink-0'>
                 <svg className='w-6 h-6' fill='none' viewBox='0 0 24 24' stroke='currentColor' strokeWidth={2}>
@@ -51,12 +51,12 @@ export const ConfirmationProvider = ({ children }) => {
               <h3 className='text-lg font-bold text-neutral-800'>{config.title}</h3>
             </div>
 
-            {/* Cuerpo */}
+            {/* Cuerpo del modal */}
             <div className='p-6'>
               <p className='text-sm text-neutral-600 leading-relaxed'>{config.message}</p>
             </div>
 
-            {/* Botones de Acción */}
+            {/* Botones de acción del modal */}
             <div className='p-4 bg-neutral-50 border-t border-neutral-100 flex justify-end gap-3'>
               <button
                 onClick={handleCancel}

@@ -5,6 +5,7 @@ import { useActivity } from '../context/ActivityContext'
 import { getActivityMessage } from '../utils/activityLogs'
 
 export const CreateListModal = ({ isOpen, onClose }) => {
+  // Estado local para nombre, color, carga y errores
   const [name, setName] = useState('')
   const [color, setColor] = useState('#ffffff')
   const [loading, setLoading] = useState(false)
@@ -58,6 +59,7 @@ export const CreateListModal = ({ isOpen, onClose }) => {
   }
 
   const handleClose = () => {
+    // Limpiar estado antes de cerrar el modal
     setName('')
     setColor('#ffffff')
     setError('')

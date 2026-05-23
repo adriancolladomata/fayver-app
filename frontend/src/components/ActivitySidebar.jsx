@@ -1,4 +1,4 @@
-// 📄 src/components/ActivitySidebar.jsx
+// src/components/ActivitySidebar.jsx
 
 import { useEffect } from 'react'
 import { useActivity } from '../context/ActivityContext'
@@ -37,8 +37,8 @@ export const ActivitySidebar = () => {
           /* Ancho responsivo: 85% del ancho visible en móvil, 320px fijos en escritorio */
           w-[85vw] sm:w-80
           
-          /* Animación de entrada/salida y control de clics fantasmas */
-          ${isHistoryOpen ? 'translate-x-0 opacity-100' : 'translate-x-[110%] opacity-0 pointer-events-none'}
+          /* SOLUCIÓN: Si no está abierto, añadimos 'hidden' para que no rompa el ancho de la pantalla */
+          ${isHistoryOpen ? 'translate-x-0 opacity-100' : 'translate-x-[110%] opacity-0 pointer-events-none hidden'}
         `}
       >
         {/* Cabecera interna */}

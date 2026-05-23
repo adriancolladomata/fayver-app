@@ -17,7 +17,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
   const { currentBoard } = useBoards()
 
   const fetchArchivedStructure = async () => {
-    if (!boardId) return // Seguridad por si no hay tablón cargado
+    if (!boardId) return // Seguridad si no hay tablón cargado
 
     try {
       setLoading(true)
@@ -35,7 +35,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
       fetchArchivedStructure()
     }
 
-    // ESTA ES LA CLAVE: Cuando el modal se cierra o cambias de tablón, limpiamos los estados inmediatamente para que empiece desde cero.
+    // Limpiar el estado cuando se cierra el modal o cambia el tablero
     return () => {
       setStructuredData([])
       setExpandedLists({})
@@ -48,31 +48,30 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
     setExpandedLists(prev => ({ ...prev, [listId]: !prev[listId] }))
   }
 
-  // --- ACCIONES DE RESTAURACIÓN (Afecta a la lista y sus tareas en bloque) ---
+  // Restaura una lista archivada y sus tareas
   const handleRestoreList = async (listId) => {
     try {
-    // 1. Hace la petición de restauración al servidor
+      // Desarchiva la lista en el servidor
       await updateListReq(boardId, listId, { is_archived: false })
 
-      // Mensaje para el historial de actividad
+      // Registra la acción en el historial de actividad
       const restoredList = structuredData.find(item => item.id === listId)
       logActivity(getActivityMessage('LIST_RESTORE', {
         name: restoredList?.name || 'lista',
         boardName: currentBoard?.name
       }))
 
-      // 2. Refresca el contenido interno del modal de archivados
+      // Recarga los datos del modal de archivados
       await fetchArchivedStructure()
 
-      // Le dice al contexto global que vuelva a descargar las listas activas.
-      // Esto hace que la lista restaurada aparezca instantáneamente en el tablero de fondo.
+      // Recarga las listas activas para que el cambio se vea en el tablero
       await loadLists()
     } catch (error) {
       console.error('Error al restaurar la lista:', error)
     }
   }
 
-  // --- ACCIONES DE ELIMINACIÓN (Envía la lista a la papelera general) ---
+  // Elimina definitivamente una lista archivada
   const handleSoftDeleteList = async (listId) => {
     const isConfirmed = await requireConfirm(
       'Eliminar Lista',
@@ -108,7 +107,6 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
         {/* Cuerpo Árbol */}
         <div className='flex-1 overflow-y-auto p-6 space-y-3 custom-scrollbar bg-neutral-50/50'>
           {loading ? (
-          // Mientras carga, muestra un indicador elegante en lugar de decir que está vacío
             <p className='text-neutral-500 text-sm text-center py-12 animate-pulse'>Cargando elementos archivados...</p>
           ) : structuredData.length === 0 ? (
             <p className='text-neutral-400 text-sm text-center py-12'>No hay elementos archivados en este tablón.</p>
@@ -119,7 +117,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
               return (
                 <div key={list.id} className='border border-neutral-200 rounded-lg bg-white overflow-hidden shadow-sm'>
 
-                  {/* FILA DE LA LISTA */}
+                  {/* Fila de la lista */}
                   <div
                     onClick={() => toggleList(list.id)}
                     className='p-3.5 flex justify-between items-center cursor-pointer transition-colors select-none bg-blue-50/60 hover:bg-blue-100/50'
@@ -143,7 +141,7 @@ export const ArchivedElementsModal = ({ isOpen, onClose, boardId }) => {
                     </div>
                   </div>
 
-                  {/* SUBELEMENTOS: TAREAS (Vista informativa de "Tareas Archivadas") */}
+                  {/* Subelementos: tareas (vista informativa de "Tareas Archivadas") */}
                   {expandedLists[list.id] && (
                     <div className='bg-neutral-50/80 border-t border-neutral-100 p-2 space-y-1.5 pl-8'>
                       {tasksToShow.length > 0 ? (

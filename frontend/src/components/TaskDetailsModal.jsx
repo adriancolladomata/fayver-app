@@ -55,7 +55,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
       return
     }
 
-    // 🎯 Comprobamos primero si realmente hubo algún cambio global
+    // Comprueba si hubo cambios en los datos antes de enviar
     const hasNameChanged = trimmedName !== task.name
     const hasColorChanged = color !== (task.color || '#ffffff')
     const hasContentChanged = trimmedContent !== (task.content || '').trim()
@@ -68,11 +68,10 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
       return
     }
 
-    // 🎯 Construimos el objeto enviando SIEMPRE las propiedades críticas.
-    // De esta forma, si el backend no es dinámico, no pisará datos con valores por defecto.
+    // Construye el objeto con los campos que deben enviarse al backend
     const updateData = {
       name: trimmedName,
-      color: color, // 👈 Se envía siempre el color actual seleccionado
+      color: color,
       content: trimmedContent || null,
       label: trimmedTags || null
     }
@@ -103,7 +102,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
   const handleDelete = async () => {
     if (!task) return
 
-    // 🎯 Quitamos el "if (!task || !confirm(...))" que tenías duplicado arriba
+    // Pide confirmación antes de borrar la tarea
     const hasConfirmed = await requireConfirm(
       '¿Eliminar esta tarea?',
       `Estás a punto de borrar "${task.name}". Todos los comentarios y descripciones dentro de ella desaparecerán.`
@@ -121,7 +120,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
         boardName: currentBoard?.name
       }))
       showToast('Tarea eliminada con éxito', 'success')
-      onClose() // 🎯 Cierra el modal de detalles enseguida tras borrar
+      onClose() // Cierra el modal de detalles tras borrar
     } catch (error) {
       console.error('Error al eliminar tarea:', error)
       showToast('No se pudo eliminar la tarea.', 'error')
@@ -240,7 +239,7 @@ export const TaskDetailsModal = ({ isOpen, onClose, task, boardId, listId, tasks
             </div>
           </div>
 
-          {/* Limpiado el bloque HTML obsoleto de {message.text && ...} */}
+          {/* Vista previa del contenido antes de guardar */}
 
           <div className='flex flex-col gap-3 md:flex-row md:justify-between'>
             <button

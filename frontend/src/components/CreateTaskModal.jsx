@@ -6,6 +6,7 @@ import { useActivity } from '../context/ActivityContext'
 import { getActivityMessage } from '../utils/activityLogs'
 
 export const CreateTaskModal = ({ listId, boardId, isOpen, onClose }) => {
+  // Estado local para el nombre, estado de carga y posibles errores
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -43,6 +44,7 @@ export const CreateTaskModal = ({ listId, boardId, isOpen, onClose }) => {
   }
 
   const handleClose = () => {
+    // Limpiar estado antes de cerrar el modal
     setName('')
     setError('')
     onClose()

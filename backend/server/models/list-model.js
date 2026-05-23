@@ -63,7 +63,7 @@ export class ListModel {
       // MySQL empieza el modo transacción, los cambios no son definitivos, se guardan en memoria interna y no afectan todavia a la tabla, como un borrador
       await connection.beginTransaction()
 
-      // 1. PASO DE SEGURIDAD: Movemos todas las tareas de esta lista a números negativos
+      // paso de seguridad: Movemos todas las tareas de esta lista a números negativos
       // Esto "libera" los números 0, 1, 2, 3... para que no haya choques
       await connection.query(
         'UPDATE lists SET `order` = (`order` + 1) * -1 WHERE board_id = ?',

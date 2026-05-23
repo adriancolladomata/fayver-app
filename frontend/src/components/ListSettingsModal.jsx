@@ -6,7 +6,7 @@ import { useBoards } from '../context/BoardContext'
 import { getActivityMessage } from '../utils/activityLogs'
 
 export const ListSettingsModal = ({ isOpen, onClose, list, boardId, allLists = [] }) => {
-  const [currentTab, setCurrentTab] = useState('main') // main, rename, move, color, delete
+  const [currentTab, setCurrentTab] = useState('main') // Pestaña activa dentro del modal de lista
   const [newName, setNewName] = useState(list?.name || '')
   const [selectedColor, setSelectedColor] = useState(list?.color || '#ffffff')
   const [loading, setLoading] = useState(false)

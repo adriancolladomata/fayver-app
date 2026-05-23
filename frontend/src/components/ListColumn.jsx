@@ -12,7 +12,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { updateTasksOrderReq } from '../services/taskService'
 import { getActivityMessage } from '../utils/activityLogs'
 
-// Componente Envolvedor interno para cada tarjeta de Tarea para que sea Sortable
+// Componente de tarea arrastrable dentro de la lista
 const SortableTaskItem = ({ task, onClick, onToggleComplete }) => {
   const {
     attributes,
@@ -36,7 +36,7 @@ const SortableTaskItem = ({ task, onClick, onToggleComplete }) => {
       onClick={onClick}
       className='bg-gray-50 p-3 rounded border border-gray-200 hover:shadow-md transition-shadow flex items-start gap-2 cursor-pointer select-none'
     >
-      {/* Indicador visual para arrastrar (Se lleva los listeners y attributes) */}
+      {/* Indicador visual para arrastrar y mover la tarea */}
       <div
         {...attributes}
         {...listeners}
@@ -96,7 +96,7 @@ export const ListColumn = ({ list, boardId }) => {
   const { logActivity } = useActivity()
   const { currentBoard } = useBoards()
 
-  // ESTADO LOCAL DE TAREAS PARA OPTIMISTIC UI
+  // Estado local para mostrar cambios inmediatos en las tareas
   const [localTasks, setLocalTasks] = useState([])
 
   useEffect(() => {
@@ -105,7 +105,7 @@ export const ListColumn = ({ list, boardId }) => {
     }
   }, [list.tasks])
 
-  // Inicializar dnd-kit para la LISTA/COLUMNA misma
+  // Inicializar dnd-kit para que la lista pueda moverse
   const {
     attributes: listAttributes,
     listeners: listListeners,
@@ -121,14 +121,14 @@ export const ListColumn = ({ list, boardId }) => {
     opacity: isListDragging ? 0.4 : 1,
   }
 
-  // Configuración de sensores para las tareas
+  // Configuración de sensores para detectar el arrastre de tareas
   const taskSensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 }
     })
   )
 
-  // MANEJADOR DEL ARRASTRE DE TAREAS INTERNAS
+  // Maneja el fin del arrastre para reordenar tareas
   const handleTaskDragEnd = async (event) => {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -157,7 +157,7 @@ export const ListColumn = ({ list, boardId }) => {
         newIndex,
         boardName: currentBoard?.name
       }))
-      console.log('¡Orden de tareas guardado en base de datos!')
+      console.log('Orden de tareas guardado en base de datos')
     } catch (error) {
       console.error('Error al reordenar tareas:', error)
       setLocalTasks(list.tasks) // Revertir si hay error de red/servidor
@@ -188,7 +188,7 @@ export const ListColumn = ({ list, boardId }) => {
         className='bg-white rounded-lg shadow p-4 w-80 flex-shrink-0 flex flex-col'
       >
         <div className='flex justify-between items-center mb-4'>
-          {/* CABECERA DE LA COLUMNA (Arrastre de listas) */}
+          {/* Cabecera de la columna con el arrastre de la lista */}
           <h3
             {...listAttributes}
             {...listListeners}
@@ -210,7 +210,7 @@ export const ListColumn = ({ list, boardId }) => {
           </button>
         </div>
 
-        {/* ZONA DE TAREAS: ENCAPSULADA CON SU PROPIO CONTEXTO DND */}
+        {/* Zona de tareas con dnd-kit para arrastrar internamente */}
         <div className='space-y-2 mb-4 max-h-96 overflow-y-auto custom-scrollbar'>
           <DndContext sensors={taskSensors} collisionDetection={closestCenter} onDragEnd={handleTaskDragEnd}>
             <SortableContext items={localTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>

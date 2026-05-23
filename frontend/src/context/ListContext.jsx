@@ -102,7 +102,7 @@ export const ListProvider = ({ children, boardId }) => {
   const updateList = useCallback(async (listId, data) => {
     try {
       const response = await updateListReq(boardId, listId, data)
-      // SSi el cambio es archivar, la detectamos y filtramos al instante para actualizar
+      // Si el cambio es archivar, la detectamos y filtramos al instante para actualizar
       if (data && data.is_archived === true) {
         setLists(prevLists => prevLists.filter(list => list.id !== listId))
       } else {
@@ -133,7 +133,7 @@ export const ListProvider = ({ children, boardId }) => {
   // En este caso, compartimos la lista de listas, el estado de carga, la función para cargar las listas,
   // la función para crear una nueva lista, la función para crear una nueva tarea, la función para eliminar una lista,
   // y la función para eliminar una tarea
-  // 🌟 Inyectamos las nuevas propiedades en el value compartido
+  // Inyectamos las nuevas propiedades en el value compartido
   const value = {
     lists,
     setLists,

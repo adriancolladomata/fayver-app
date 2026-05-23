@@ -5,7 +5,7 @@ import { CreateBoardModal } from './CreateBoardModal.jsx'
 import { useBoards } from '../context/BoardContext.jsx'
 import { FayverFlowLogo } from '../assets/fayver.jsx'
 
-// 🎯 Recibe las props desde el Layout
+// Recibe las props desde el layout principal
 export const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
   const navigate = useNavigate()
   const { logout } = useAuth()
@@ -66,7 +66,7 @@ export const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               </div>
             </div>
 
-            {/* Botón Nuevo Tablón */}
+            {/* Botón para abrir el modal de nuevo tablón */}
             <div className='p-4'>
               <button
                 onClick={() => setIsModalOpen(true)}
@@ -77,7 +77,7 @@ export const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               </button>
             </div>
 
-            {/* Sección de Tablones */}
+            {/* Sección con la lista de tablones del usuario */}
             <div className='flex-1 overflow-y-auto px-4'>
               <h2 className='text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2'>Tus Tablones</h2>
               {loading ? (
@@ -100,7 +100,7 @@ export const Sidebar = ({ isSidebarOpen, setIsSidebarOpen }) => {
               )}
             </div>
 
-            {/* Footer */}
+            {/* Pie con el botón de cerrar sesión */}
             <div className='p-4 border-t flex justify-center border-gray-800'>
               <button onClick={handleLogout} className='hover:bg-neutral-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm cursor-pointer'>
                 Cerrar Sesión

@@ -33,7 +33,7 @@ export const ActivityProvider = ({ children }) => {
     }
   }, [user])
 
-  // 3. Guardamos en el localStorage específico del usuario cuando añade actividades
+  // Guardamos en localStorage las actividades del usuario cuando cambian
   useEffect(() => {
     if (user?.id && activities.length > 0) {
       localStorage.setItem(`fayver_logs_${user.id}`, JSON.stringify(activities))

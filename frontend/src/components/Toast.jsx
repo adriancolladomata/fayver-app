@@ -1,4 +1,5 @@
 export const Toast = ({ message, type, visible }) => {
+  // Muestra un toast en pantalla solo si hay mensaje y está activo
   if (!visible || !message) return null
 
   const config = type === 'error'
