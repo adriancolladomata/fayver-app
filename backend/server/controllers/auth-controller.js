@@ -69,7 +69,7 @@ export const login = async (req, res) => {
       },
       SECRET_JWT_KEY,
       {
-        expiresIn: '1h'
+        expiresIn: '8h'
       }
     )
 
